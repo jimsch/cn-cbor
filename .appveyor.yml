@@ -27,7 +27,7 @@ install:
 
 before_build:
   - cmake --version
-  - cmake   -G "Visual Studio 15 2017 Win64" .
+  - cmake   -G "Visual Studio 15 2017 Win64" -Dfatal_warnings=OFF -Dcoveralls=OFF .
 
 build_script:
   - msbuild cn-cbor.sln
