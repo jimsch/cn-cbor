@@ -4,8 +4,8 @@ platform:
 image: Visual Studio 2017
   
 configuration:
-  - Release
-#  - Debug   suppress this for now
+#  - Release
+  - Debug
 
 environment:
   matrix:
@@ -31,4 +31,5 @@ before_build:
 
 build_script:
   - msbuild cn-cbor.sln
+  - dir dist\lib\Debug
   - ctest -C %CONFIGURATION%
