@@ -165,10 +165,17 @@ void _print_encoder(const cn_cbor * cb, int depth, void * context)
 		write_data(ws, rgchT, cch);
 		break;
 
+#ifndef CBOR_NO_FLOAT
+   case CN_CBOR_FLOAT:
+		cch = _snprintf(rgchT, sizeof(rgchT), "%f", cb->v.f);
+		write_data(ws, rgchT, cch);
+		break;
+            
 	case CN_CBOR_DOUBLE:
 		cch = _snprintf(rgchT, sizeof(rgchT), "%f", cb->v.dbl);
 		write_data(ws, rgchT, cch);
 		break;
+#endif
 
 	case CN_CBOR_INVALID:
 		write_data(ws, "invalid", 7);

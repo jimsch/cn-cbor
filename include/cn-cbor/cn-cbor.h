@@ -68,10 +68,12 @@ typedef enum cn_cbor_type {
   CN_CBOR_TAG,
   /** Simple value, other than the defined ones */
   CN_CBOR_SIMPLE,
+#ifndef CBOR_NO_FLOAT
   /** Doubles, floats, and half-floats */
   CN_CBOR_DOUBLE,
   /** Floats, and half-floats */
   CN_CBOR_FLOAT,
+#endif
   /** An error has occurred */
   CN_CBOR_INVALID
 } cn_cbor_type;
@@ -117,11 +119,13 @@ typedef struct cn_cbor {
 #else
     unsigned long uint;
 #endif
+#ifndef CBOR_NO_FLOAT
     /** CN_CBOR_DOUBLE */
     double dbl;
     /** CN_CBOR_FLOAT */
     float f;
     /** for use during parsing */
+#endif
 #ifdef _MSC_VER
 	uint64_t count;
 #else
