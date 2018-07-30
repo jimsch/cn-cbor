@@ -27,9 +27,9 @@ install:
 
 before_build:
   - cmake --version
-  - cmake   -G "Visual Studio 15 2017 Win64" -Dfatal_warnings=OFF -Dcoveralls=OFF . && exit 0
+  - cmake   -G "Visual Studio 15 2017 Win64" -Dfatal_warnings=OFF -Dcoveralls=OFF .
 
 build_script:
-  - msbuild cn-cbor.sln
+  - msbuild cn-cbor.sln  & exit 0
   - dir dist\lib\Debug
   - ctest -C %CONFIGURATION%
