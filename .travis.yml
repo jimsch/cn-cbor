@@ -12,6 +12,3 @@ addons:
       - cmake-data
 script:
 - "./build.sh all test"
-notifications:
-  slack:
-    secure: WdgYxQrnFR5eu/eKygPuLjlFsuZxD9m2PLRWTLT85aj+18Gp2ooPjnI9UFdb1xY87+4InhWk6PvQU35j4bG0etPQtX+0H4T4Zdk/aD6KxgJBHIYGqtfZUMmdFfVpUH9cCPx99Jjw81mhKrxM+6rXiZdiWXuNhvbJOApRT6uxE2k=
