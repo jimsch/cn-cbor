@@ -30,5 +30,5 @@ before_build:
   - cmake   -G "Visual Studio 15 2017 Win64" .
 
 build_script:
-  - msbuild cose-c.sln
+  - msbuild cn-cbor.sln
   - ctest -C %CONFIGURATION%
