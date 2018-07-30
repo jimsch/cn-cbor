@@ -25,6 +25,7 @@ option ( coveralls_send "Send data to coveralls site" OFF )
 option ( build_docs "Create docs using Doxygen" ${DOXYGEN_FOUND} )
 option ( build_shared_libs "Build Shared Libraries" ON)
 option ( no_floats "Build without floating point support" OFF )
+option ( align_reads    "Use memcpy in ntoh*p()" OFF )
 
 set ( dist_dir    ${CMAKE_BINARY_DIR}/dist )
 set ( prefix      ${CMAKE_INSTALL_PREFIX} )
