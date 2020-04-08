@@ -16,7 +16,7 @@ environment:
     - OPTIONS: -Dalign_reads=ON
 
 before_build:
-  - cmake -G "Visual Studio 16 2019" -Dfatal_warnings=OFF $(OPTIONS)
+  - cmd: cmake -G "Visual Studio 16 2019" -Dfatal_warnings=OFF $(OPTIONS)
 
 build:
   project: $(APPVEYOR_BUILD_FOLDER)\$(APPVEYOR_PROJECT_NAME).sln
