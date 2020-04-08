@@ -123,7 +123,7 @@ static void _write_positive(cn_write_state *ws, cn_cbor_type typ, uint64_t val) 
     uint32_t be32 = (uint32_t)val;
     ensure_writable(5);
     // be32 = hton32p(&be32);
-    be32 = htonl(&be32);
+    be32 = htonl(be32);
     write_byte_and_data(ib | 26, (const void*)&be32, 4);
   } else {
     uint64_t be64;
