@@ -195,6 +195,7 @@ void _print_encoder(const cn_cbor * cb, int depth, void * context)
 		}
 		write_data(ws, "\'", 1);
 		break;
+
 	}
 
 	if (depth > 0) {
