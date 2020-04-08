@@ -9,10 +9,11 @@ configuration:
   - debug
 
 environment:
-  - OPTIONS: -Duse_context=ON
-  - OPTIONS: -Duse_context=OFF
-  - OPTIONS: -Dno_floats=ON
-  - OPTIONS: -Dalign_reads=ON
+  matrix:
+    - OPTIONS: -Duse_context=ON
+    - OPTIONS: -Duse_context=OFF
+    - OPTIONS: -Dno_floats=ON
+    - OPTIONS: -Dalign_reads=ON
 
 before_build:
   - cmake -G "Visual Studio 16 2019" -Dfatal_warnings=OFF $(OPTIONS)
