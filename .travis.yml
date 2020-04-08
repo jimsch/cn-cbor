@@ -1,8 +1,13 @@
 language: c
 compiler:
-- clang
-- gcc
-sudo: false
+  - clang
+  - gcc
+
+env:
+  - OPTIONS=-Duse_context=OFF
+  - OPTIONS=-Duse_context=ON
+  - OPTIONS=-Dno_floats=ON
+
 addons:
   apt:
     sources:
