@@ -21,6 +21,6 @@ before_build:
 build:
   project: $(APPVEYOR_BUILD_FOLDER)\$(APPVEYOR_PROJECT_NAME).sln
 
-test:
+test_script:
   - cd dist\test\$(CONFIGURATION)
   - cbor_test.exe
