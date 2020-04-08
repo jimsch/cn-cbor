@@ -1,35 +1,15 @@
+image:
+  - Visual Studio 2019
+
 platform:
   - x64
 
-image: Visual Studio 2017
-  
 configuration:
-#  - Release
-  - Debug
-
-environment:
-  matrix:
-    - USE_CONTEXT: ON      
-      USE_EMBEDTLS: OFF
-
-#    - USE_CONTEXT: OFF
-#      USE_EMBEDTLS: OFF
-
-#    - USE_CONTEXT: OFF
-#      USE_EMBEDTLS: ON
-
-
-matrix:
-  fast_finish: true
-
-install:
-  - git submodule update --init --recursive
+  - release
+  - debug
 
 before_build:
-  - cmake --version
-  - cmake   -G "Visual Studio 15 2017 Win64" -Dfatal_warnings=OFF -Dcoveralls=OFF -Dbuild_shared_libs=OFF .
+  - cmake -G "Visual Studio 16 2019" -Dfatal_warnings=OFF
 
-build_script:
-  - msbuild cn-cbor.sln  & exit 0
-  - dir dist\lib\Debug
-  - ctest -C %CONFIGURATION%
+build:
+  project: $(APPVEYOR_BUILD_FOLDER)\$(APPVEYOR_PROJECT_NAME).sln
