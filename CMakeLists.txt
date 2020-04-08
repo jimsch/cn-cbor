@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0.0)
 
 set(VERSION_MAJOR
-    0
+    1
     CACHE STRING "Project major version number")
 set(VERSION_MINOR
     "1"

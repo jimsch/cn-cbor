@@ -8,6 +8,10 @@
 #ifndef CN_CBOR_H
 #define CN_CBOR_H
 
+#ifdef __MBED__
+#include <stddef.h>
+#endif
+
 #ifndef MYLIB_EXPORT
 #if defined (_WIN32) 
 #if defined(CN_CBOR_IS_DLL)
@@ -33,7 +37,16 @@ extern "C" {
 #include <WinSock2.h>
 typedef signed long ssize_t;
 #else
+#ifndef __MBED__
 #include <unistd.h>
+#else
+#ifndef RETARGET_H
+#ifndef _SSIZE_T_DECLARED
+typedef signed long ssize_t;
+#define _SSIZE_T_DECLARED
+#endif
+#endif
+#endif
 #endif
 
 /**
@@ -68,10 +81,12 @@ typedef enum cn_cbor_type {
   CN_CBOR_TAG,
   /** Simple value, other than the defined ones */
   CN_CBOR_SIMPLE,
+#ifndef CBOR_NO_FLOAT
   /** Doubles, floats, and half-floats */
   CN_CBOR_DOUBLE,
   /** Floats, and half-floats */
   CN_CBOR_FLOAT,
+#endif
   /** An error has occurred */
   CN_CBOR_INVALID
 } cn_cbor_type;
@@ -117,10 +132,12 @@ typedef struct cn_cbor {
 #else
     unsigned long uint;
 #endif
+#ifndef CBOR_NO_FLOAT
     /** CN_CBOR_DOUBLE */
     double dbl;
     /** CN_CBOR_FLOAT */
     float f;
+#endif
     /** for use during parsing */
 #ifdef _MSC_VER
 	uint64_t count;
@@ -283,7 +300,7 @@ cn_cbor* cn_cbor_mapget_int(const cn_cbor* cb, int key);
 /**
  * Get the item with the given index from a CBOR array.
  *
- * @param[in]  cb           The CBOR map
+ * @param[in]  cb           The CBOR array
  * @param[in]  idx          The array index
  * @return                  The matching value, or NULL if the index is invalid
  */
@@ -490,6 +507,17 @@ bool cn_cbor_array_append(cn_cbor* cb_array,
  */
 
 extern ssize_t cn_cbor_printer_write(char * buffer, size_t bufferSize, const cn_cbor * cb, const char * indent, const char * crlf);
+
+#ifdef __MBED__
+#define ntohs(a) ((uint16_t) (((((uint16_t) (a)) & 0xff) << 8) | (((uint16_t) (a)) & 0xff00) >> 8))
+#define htons(a)  ntohs(a)
+#define ntohl(a) ((uint32_t) ( \
+                      ((((uint32_t)(a)) & 0x000000ff) << 24) | \
+                      ((((uint32_t)(a)) & 0x0000ff00) <<  8) | \
+                      ((((uint32_t)(a)) & 0x00ff0000) >>  8) | \
+                      ((((uint32_t)(a)) & 0xff000000) >> 24)))
+#define htonl(a) ntohl(a)
+#endif // __MBED__
 
 #ifdef  __cplusplus
 }
