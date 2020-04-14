@@ -29,15 +29,47 @@ There is a `Simple-Makefile` for playing around, as well as a complete
 
 Building with `cmake`:
 
-    ./build.sh
+```sh
+mkdir build
+cd build
+cmake ..
+cmake --build . -- all
 
-Building including testing:
-
-    ./build.sh all test
+```
 
 Generating a test coverage report (requires lcov[^1]; result in `build/lcov/index.html`):
 
-    ./build.sh all coveralls coverage_report
+```sh
+rm -rf build
+mkdir build
+cd build
+cmake .. -Dcoveralls_send=ON
+cmake --build . -- all coveralls coverage_report
+```
+
+## Consuming
+
+### With cmake
+
+find_package
+```cmake
+find_package(cn-cbor)
+add_executable(myapp main.cpp)
+target_link_libraries(myapp cn-cbor::cn-cbor)
+```
+
+add_subdirectory
+```cmake
+add_subdirectory(vendor/cn-cbor)
+add_executable(myapp main.cpp)
+target_link_libraries(myapp cn-cbor::cn-cbor)
+```
+
+### With Conan
+
+This package is available in the [conan center](https://conan.io/center/cn-cbor/1.0.0)
+
+add `cn-cbor/1.0.0` to you conan file
 
 License: MIT
 
