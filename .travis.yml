@@ -4,9 +4,9 @@ compiler:
   - gcc
 
 env:
-  - OPTIONS=-Duse_context=OFF
-  - OPTIONS=-Duse_context=ON
-  - OPTIONS=-Dno_floats=ON
+  - OPTIONS=-DCN_CBOR_USE_CONTEXT=OFF
+  - OPTIONS=-DCN_CBOR_USE_CONTEXT=ON
+  - OPTIONS=-DCN_CBOR_NO_FLOATS=ON
 
 addons:
   apt:

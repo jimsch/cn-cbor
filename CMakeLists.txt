@@ -18,18 +18,16 @@ project("cn-cbor" VERSION "${CN_VERSION}")
 # OPTIONS
 # ##############################################################################
 
-option(use_context "Use context pointer for CBOR functions" OFF)
-option(verbose "Produce verbose makefile output" OFF)
-option(optimize "Optimize for size" OFF)
-option(fatal_warnings "Treat build warnings as errors" ON)
-option(coveralls "Generate coveralls data" ON)
-option(coveralls_send "Send data to coveralls site" OFF)
-option(build_docs "Create docs using Doxygen" OFF)
-option(build_tests "Create tests" ON)
-option(no_floats "Build without floating point support" OFF)
-option(align_reads "Use memcpy in ntoh*p()" OFF)
-
-include(GNUInstallDirs)
+option(CN_CBOR_USE_CONTEXT "Use context pointer for CBOR functions" OFF)
+option(CN_CBOR_VERBOSE "Produce verbose makefile output" OFF)
+option(CN_CBOR_OPTIMIZE "Optimize for size" OFF)
+option(CN_CBOR_ALIGN_READS "Treat build warnings as errors" ON)
+option(CN_CBOR_COVERALLS "Generate coveralls data" ON)
+option(CN_CBOR_COVERALLS_SEND "Send data to coveralls site" OFF)
+option(CN_CBOR_BUILD_DOCS "Create docs using Doxygen" OFF)
+option(CN_CBOR_BUILD_TESTS "Create tests" ON)
+option(CN_CBOR_NO_FLOATS "Build without floating point support" OFF)
+option(CN_CBOR_ALIGN_READS "Use memcpy in ntoh*p()" OFF)
 
 set(dist_dir ${CMAKE_BINARY_DIR}/dist)
 set(prefix ${CMAKE_INSTALL_PREFIX})
@@ -47,17 +45,17 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${dist_dir}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${dist_dir}/lib)
 
 if(NOT CMAKE_BUILD_TYPE)
-  if(optimize)
+  if(CN_CBOR_OPTIMIZE)
     set(CMAKE_BUILD_TYPE MinSizeRel)
-    set(coveralls OFF)
-    set(coveralls_send OFF)
+    set(CN_CBOR_COVERALLS OFF)
+    set(CN_CBOR_COVERALLS_SEND OFF)
   else()
     set(CMAKE_BUILD_TYPE Debug)
   endif()
 endif()
 
 if(MSVC)
-  set(coveralls OFF)
+  set(CN_CBOR_COVERALLS OFF)
 endif()
 
 message("Build type: ${CMAKE_BUILD_TYPE}")
@@ -65,26 +63,26 @@ message("Build type: ${CMAKE_BUILD_TYPE}")
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
   message(STATUS "adding GCC/Clang options ")
   add_definitions(-std=gnu99 -Wall -Wextra -pedantic)
-  if(fatal_warnings)
+  if(CN_CBOR_ALIGN_READS)
     add_definitions(-Werror)
   endif()
-  if(optimize)
+  if(CN_CBOR_OPTIMIZE)
     add_definitions(-Os)
   endif()
 elseif(MSVC)
   add_definitions(/W3)
-  if(fatal_warnings)
+  if(CN_CBOR_ALIGN_READS)
     add_definitions(/WX)
   endif()
 else()
   message(FATAL_ERROR "unhandled compiler id: ${CMAKE_C_COMPILER_ID}")
 endif()
 
-if(no_floats)
+if(CN_CBOR_NO_FLOATS)
   add_definitions(-DCBOR_NO_FLOAT)
 endif()
 
-if(verbose)
+if(CN_CBOR_VERBOSE)
   set(CMAKE_VERBOSE_MAKEFILE ON)
 endif()
 
@@ -95,10 +93,10 @@ endif()
 set(cbor_srcs src/cn-cbor.c src/cn-create.c src/cn-encoder.c src/cn-error.c
               src/cn-get.c src/cn-print.c)
 
-if(align_reads)
+if(CN_CBOR_ALIGN_READS)
   add_definitions(-DCBOR_ALIGN_READS)
 endif()
-if(use_context)
+if(CN_CBOR_USE_CONTEXT)
   add_definitions(-DUSE_CBOR_CONTEXT)
 endif()
 # default is static, can be shared if -DBUILD_SHARED_LIBS=ON passed to cmake
@@ -110,13 +108,13 @@ target_include_directories(
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/src)
 if(MSVC)
   message("test: ${BUILD_SHARED_LIBS}")
-  message("verbose: ${verbose}")
+  message("CN_CBOR_VERBOSE: ${CN_CBOR_VERBOSE}")
   target_link_libraries(${PROJECT_NAME} ws2_32)
 endif()
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
-if(coveralls)
+if(CN_CBOR_COVERALLS)
   include(Coveralls)
   coveralls_turn_on_coverage()
 
@@ -127,10 +125,10 @@ if(coveralls)
   endforeach()
 
   # Create the coveralls target.
-  coveralls_setup("${COVERAGE_SRCS}" ${coveralls_send} # If we should upload.
+  coveralls_setup("${COVERAGE_SRCS}" ${CN_CBOR_COVERALLS_SEND} # If we should upload.
   )
 
-  # add_dependencies(coveralls, all)
+  # add_dependencies(CN_CBOR_COVERALLS, all)
 endif()
 
 if(NOT MSVC)
@@ -147,7 +145,7 @@ endif(NOT MSVC)
 # DOCS
 # ##############################################################################
 
-if(build_docs)
+if(CN_CBOR_BUILD_DOCS)
   find_package(Doxygen)
 
   if(NOT DOXYGEN_FOUND)
@@ -173,7 +171,7 @@ endif()
 # TESTS
 # ##############################################################################
 
-if(build_tests)
+if(CN_CBOR_BUILD_TESTS)
   include(CTest)
   add_subdirectory(test)
   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)

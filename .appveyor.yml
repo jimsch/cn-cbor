@@ -10,13 +10,13 @@ configuration:
 
 environment:
   matrix:
-    - OPTIONS: -Duse_context=ON
-    - OPTIONS: -Duse_context=OFF
-    - OPTIONS: -Dno_floats=ON
-    - OPTIONS: -Dalign_reads=ON
+    - OPTIONS: -DCN_CBOR_USE_CONTEXT=ON
+    - OPTIONS: -DCN_CBOR_USE_CONTEXT=OFF
+    - OPTIONS: -DCN_CBOR_NO_FLOATS=ON
+    - OPTIONS: -DCN_CBOR_ALIGN_READS=ON
 
 before_build:
-  - cmake -G "Visual Studio 16 2019" -Dfatal_warnings=OFF %OPTIONS%
+  - cmake -G "Visual Studio 16 2019" -DCN_CBOR_ALIGN_READS=OFF %OPTIONS%
 
 build:
   project: $(APPVEYOR_BUILD_FOLDER)\$(APPVEYOR_PROJECT_NAME).sln
