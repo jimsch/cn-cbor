@@ -16,7 +16,7 @@ environment:
     - OPTIONS: -DCN_CBOR_ALIGN_READS=ON
 
 before_build:
-  - cmake -G "Visual Studio 16 2019" -DCN_CBOR_ALIGN_READS=OFF %OPTIONS%
+  - cmake -G "Visual Studio 16 2019" -DCN_CBOR_FATAL_WARNINGS=OFF %OPTIONS%
 
 build:
   project: $(APPVEYOR_BUILD_FOLDER)\$(APPVEYOR_PROJECT_NAME).sln
