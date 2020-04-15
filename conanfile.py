@@ -30,7 +30,7 @@ class CnCborConan(ConanFile):
 
     def source(self):
         self.run(
-            "git clone -b complete git@github.com:jimsch/cn-cbor.git")
+            "git clone git@github.com:jimsch/cn-cbor.git")
         os.rename("cn-cbor", self._source_subfolder)
 
     def configure(self):
@@ -40,9 +40,9 @@ class CnCborConan(ConanFile):
     def _configure_cmake(self):
         if not self._cmake:
             self._cmake = CMake(self)
-        self._cmake.definitions["build_tests"] = False
-        self._cmake.definitions["build_docs"] = False
-        self._cmake.definitions["coveralls"] = False
+        self._cmake.definitions["CN_CBOR_BUILD_TESTS"] = False
+        self._cmake.definitions["CN_CBOR_BUILD_DOCS"] = False
+        self._cmake.definitions["CN_CBOR_COVERALLS"] = False
         self._cmake.configure(
             source_folder=self._source_subfolder, build_folder=self._build_subfolder)
 
