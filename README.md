@@ -34,7 +34,6 @@ mkdir build
 cd build
 cmake ..
 cmake --build . -- all
-
 ```
 
 Generating a test coverage report (requires lcov[^1]; result in `build/lcov/index.html`):
@@ -43,9 +42,11 @@ Generating a test coverage report (requires lcov[^1]; result in `build/lcov/inde
 rm -rf build
 mkdir build
 cd build
-cmake .. -Dcoveralls_send=ON
+cmake .. -DCN_CBOR_COVERALLS_SEND=ON
 cmake --build . -- all coveralls coverage_report
 ```
+
+[^1]: Installation with homebrew: `brew install lcov`
 
 ## Consuming
 
@@ -69,8 +70,6 @@ target_link_libraries(myapp cn-cbor::cn-cbor)
 
 This package is available in the [conan center](https://conan.io/center/cn-cbor/1.0.0)
 
-add `cn-cbor/1.0.0` to you conan file
+add `cn-cbor/[>=1.0.0]` to you conan file
 
 License: MIT
-
-[^1]: Installation with homebrew: `brew install lcov`
