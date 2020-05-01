@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdio.h>
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 #ifdef EMACS_INDENTATION_HELPER
@@ -27,28 +27,24 @@ extern "C" {
 #include "cn-cbor/cn-cbor.h"
 #include "cbor.h"
 
-typedef struct _write_state
-{
-	char * rgbOutput;
+typedef struct _write_state {
+	char *rgbOutput;
 	ssize_t ib;
 	size_t cbLeft;
-	uint8_t * rgFlags;
-	const char * szIndentWith;
-	const char * szEndOfLine;
+	uint8_t *rgFlags;
+	const char *szIndentWith;
+	const char *szEndOfLine;
 } cn_write_state;
 
-typedef void(*cn_visit_func)(const cn_cbor *cb, int depth, void *context);
-extern void _visit(const cn_cbor *cb,
-	cn_visit_func visitor,
-	cn_visit_func breaker,
-	void *context);
+typedef void (*cn_visit_func)(const cn_cbor *cb, int depth, void *context);
+extern void _visit(const cn_cbor *cb, cn_visit_func visitor, cn_visit_func breaker, void *context);
 
-const char RgchHex[] = { '0', '1', '2', '3', '4', '5', '6', '7',
-'8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+const char RgchHex[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
-bool _isWritable(cn_write_state * ws, size_t cb)
+bool _isWritable(cn_write_state *ws, size_t cb)
 {
-	if (ws->rgbOutput == NULL) return true;
+	if (ws->rgbOutput == NULL)
+		return true;
 	if ((ws->ib < 0) || (ws->ib + cb > ws->cbLeft)) {
 		ws->ib = -1;
 		return false;
@@ -56,21 +52,21 @@ bool _isWritable(cn_write_state * ws, size_t cb)
 	return true;
 }
 
-void write_data(cn_write_state * ws, const char * sz, size_t cb)
+void write_data(cn_write_state *ws, const char *sz, size_t cb)
 {
 	if (_isWritable(ws, cb)) {
-		if (ws->rgbOutput != NULL) memcpy(ws->rgbOutput + ws->ib, sz, cb);
+		if (ws->rgbOutput != NULL)
+			memcpy(ws->rgbOutput + ws->ib, sz, cb);
 		ws->ib += cb;
 	}
 }
 
-void _doIndent(cn_write_state * ws, int depth)
+void _doIndent(cn_write_state *ws, int depth)
 {
 	int i;
-	char * sz = ws->rgbOutput + ws->ib;
+	char *sz = ws->rgbOutput + ws->ib;
 	size_t cbIndentWith = strlen(ws->szIndentWith);
 	int cbIndent = depth * cbIndentWith;
-
 
 	if (ws->rgbOutput == NULL) {
 		ws->ib += cbIndent;
@@ -89,12 +85,12 @@ void _doIndent(cn_write_state * ws, int depth)
 	return;
 }
 
-void _print_encoder(const cn_cbor * cb, int depth, void * context)
+void _print_encoder(const cn_cbor *cb, int depth, void *context)
 {
 	int i;
 	char rgchT[256];
 	int cch;
-	cn_write_state * ws = (cn_write_state *)context;
+	cn_write_state *ws = (cn_write_state *)context;
 	uint8_t flags = ws->rgFlags[depth];
 
 	if (flags & 1) {
@@ -113,136 +109,142 @@ void _print_encoder(const cn_cbor * cb, int depth, void * context)
 	}
 
 	switch (cb->type) {
-	case CN_CBOR_BYTES_CHUNKED:
-	case CN_CBOR_TEXT_CHUNKED:
-	  break;
+		case CN_CBOR_BYTES_CHUNKED:
+		case CN_CBOR_TEXT_CHUNKED:
+			break;
 
-	case CN_CBOR_ARRAY:
-		write_data(ws, "[", 1);
-		ws->rgFlags[depth] |= 4;
+		case CN_CBOR_ARRAY:
+			write_data(ws, "[", 1);
+			ws->rgFlags[depth] |= 4;
 
-		if (ws->szIndentWith) {
-			write_data(ws, ws->szEndOfLine, strlen(ws->szEndOfLine));
-			_doIndent(ws, depth + 1);
-		}
-		break;
+			if (ws->szIndentWith) {
+				write_data(ws, ws->szEndOfLine, strlen(ws->szEndOfLine));
+				_doIndent(ws, depth + 1);
+			}
+			break;
 
-	case CN_CBOR_MAP:
-		write_data(ws, "{", 1);
-		ws->rgFlags[depth] |= 8;
+		case CN_CBOR_MAP:
+			write_data(ws, "{", 1);
+			ws->rgFlags[depth] |= 8;
 
-		if (ws->szIndentWith) {
-			write_data(ws, ws->szEndOfLine, strlen(ws->szEndOfLine));
-			_doIndent(ws, depth + 1);
-		}
-		break;
+			if (ws->szIndentWith) {
+				write_data(ws, ws->szEndOfLine, strlen(ws->szEndOfLine));
+				_doIndent(ws, depth + 1);
+			}
+			break;
 
-	case CN_CBOR_TAG:
-	case CN_CBOR_UINT:
-	case CN_CBOR_SIMPLE:
-	  cch = _snprintf(rgchT, sizeof(rgchT), "%u", (unsigned int) cb->v.uint);
-		write_data(ws, rgchT, cch);
-		break;
+		case CN_CBOR_TAG:
+		case CN_CBOR_UINT:
+		case CN_CBOR_SIMPLE:
+			cch = _snprintf(rgchT, sizeof(rgchT), "%u", (unsigned int)cb->v.uint);
+			write_data(ws, rgchT, cch);
+			break;
 
-	case CN_CBOR_FALSE:
-		write_data(ws, "false", 5);
-		break;
+		case CN_CBOR_FALSE:
+			write_data(ws, "false", 5);
+			break;
 
-	case CN_CBOR_TRUE:
-		write_data(ws, "true", 4);
-		break;
+		case CN_CBOR_TRUE:
+			write_data(ws, "true", 4);
+			break;
 
-	case CN_CBOR_NULL:
-		write_data(ws, "null", 4);
-		break;
+		case CN_CBOR_NULL:
+			write_data(ws, "null", 4);
+			break;
 
-	case CN_CBOR_UNDEF:
-		write_data(ws, "undef", 5);
-		break;
+		case CN_CBOR_UNDEF:
+			write_data(ws, "undef", 5);
+			break;
 
-	case CN_CBOR_INT:
-	  cch = _snprintf(rgchT, sizeof(rgchT), "%d", (unsigned int) cb->v.sint);
-		write_data(ws, rgchT, cch);
-		break;
+		case CN_CBOR_INT:
+			cch = _snprintf(rgchT, sizeof(rgchT), "%d", (unsigned int)cb->v.sint);
+			write_data(ws, rgchT, cch);
+			break;
 
 #ifndef CBOR_NO_FLOAT
-	case CN_CBOR_FLOAT:
-		cch = _snprintf(rgchT, sizeof(rgchT), "%f", cb->v.f);
-		write_data(ws, rgchT, cch);
-		break;
+		case CN_CBOR_FLOAT:
+			cch = _snprintf(rgchT, sizeof(rgchT), "%f", cb->v.f);
+			write_data(ws, rgchT, cch);
+			break;
 
-	case CN_CBOR_DOUBLE:
-		cch = _snprintf(rgchT, sizeof(rgchT), "%f", cb->v.dbl);
-		write_data(ws, rgchT, cch);
-		break;
+		case CN_CBOR_DOUBLE:
+			cch = _snprintf(rgchT, sizeof(rgchT), "%f", cb->v.dbl);
+			write_data(ws, rgchT, cch);
+			break;
 #endif
 
-	case CN_CBOR_INVALID:
-		write_data(ws, "invalid", 7);
-		break;
+		case CN_CBOR_INVALID:
+			write_data(ws, "invalid", 7);
+			break;
 
-	case CN_CBOR_TEXT:
-		write_data(ws, "\"", 1);
-		write_data(ws, cb->v.str, cb->length);
-		write_data(ws, "\"", 1);
-		break;
+		case CN_CBOR_TEXT:
+			write_data(ws, "\"", 1);
+			write_data(ws, cb->v.str, cb->length);
+			write_data(ws, "\"", 1);
+			break;
 
-	case CN_CBOR_BYTES:
-		write_data(ws, "h'", 2);
-		for (i = 0; i < cb->length; i++) {
-			write_data(ws, &RgchHex[(cb->v.str[i] / 16) & 0xf], 1);
-			write_data(ws, &RgchHex[cb->v.str[i] & 0xf], 1);
-		}
-		write_data(ws, "\'", 1);
-		break;
-
+		case CN_CBOR_BYTES:
+			write_data(ws, "h'", 2);
+			for (i = 0; i < cb->length; i++) {
+				write_data(ws, &RgchHex[(cb->v.str[i] / 16) & 0xf], 1);
+				write_data(ws, &RgchHex[cb->v.str[i] & 0xf], 1);
+			}
+			write_data(ws, "\'", 1);
+			break;
 	}
 
 	if (depth > 0) {
-		if (ws->rgFlags[depth - 1] & 4) ws->rgFlags[depth] |= 1;
+		if (ws->rgFlags[depth - 1] & 4)
+			ws->rgFlags[depth] |= 1;
 		else if (ws->rgFlags[depth - 1] & 8) {
-			if (flags & 2) ws->rgFlags[depth] |= 1;
-			else ws->rgFlags[depth] |= 2;
+			if (flags & 2)
+				ws->rgFlags[depth] |= 1;
+			else
+				ws->rgFlags[depth] |= 2;
 		}
 	}
 }
 
-void _print_breaker(const cn_cbor * cb, int depth, void * context)
+void _print_breaker(const cn_cbor *cb, int depth, void *context)
 {
-	cn_write_state * ws = (cn_write_state *)context;
+	cn_write_state *ws = (cn_write_state *)context;
 
 	switch (cb->type) {
-	case CN_CBOR_ARRAY:
-		if (ws->szIndentWith) {
-			write_data(ws, ws->szEndOfLine, strlen(ws->szEndOfLine));
-			_doIndent(ws, depth);
-		}
+		case CN_CBOR_ARRAY:
+			if (ws->szIndentWith) {
+				write_data(ws, ws->szEndOfLine, strlen(ws->szEndOfLine));
+				_doIndent(ws, depth);
+			}
 
-		write_data(ws, "]", 1);
-		ws->rgFlags[depth + 1] = 0;
-		break;
+			write_data(ws, "]", 1);
+			ws->rgFlags[depth + 1] = 0;
+			break;
 
-	case CN_CBOR_MAP:
-		if (ws->szIndentWith) {
-			write_data(ws, ws->szEndOfLine, strlen(ws->szEndOfLine));
-			_doIndent(ws, depth);
-		}
+		case CN_CBOR_MAP:
+			if (ws->szIndentWith) {
+				write_data(ws, ws->szEndOfLine, strlen(ws->szEndOfLine));
+				_doIndent(ws, depth);
+			}
 
-		write_data(ws, "}", 1);
-		ws->rgFlags[depth + 1] = 0;
-		break;
+			write_data(ws, "}", 1);
+			ws->rgFlags[depth + 1] = 0;
+			break;
 
-	default:
-	  break;
+		default:
+			break;
 	}
 }
 
-ssize_t cn_cbor_printer_write(char * rgbBuffer, size_t cbBuffer, const cn_cbor * cb, const char * szIndentWith, const char * szEndOfLine)
+ssize_t cn_cbor_printer_write(char *rgbBuffer,
+	size_t cbBuffer,
+	const cn_cbor *cb,
+	const char *szIndentWith,
+	const char *szEndOfLine)
 {
-	uint8_t flags[128] = { 0 };
-	char rgchZero[1] = { 0 };
+	uint8_t flags[128] = {0};
+	char rgchZero[1] = {0};
 
-	cn_write_state ws = { rgbBuffer, 0, cbBuffer, flags, szIndentWith, szEndOfLine };
+	cn_write_state ws = {rgbBuffer, 0, cbBuffer, flags, szIndentWith, szEndOfLine};
 	_visit(cb, _print_encoder, _print_breaker, &ws);
 	write_data(&ws, rgchZero, 1);
 
@@ -253,9 +255,8 @@ ssize_t cn_cbor_printer_write(char * rgbBuffer, size_t cbBuffer, const cn_cbor *
 { /* Duh. */
 #endif
 #ifdef _cplusplus
-}	/* extern "C" */
+} /* extern "C" */
 #endif
 
-#endif // CN_INCLUDE_DUMPER
-#endif // CN_PRINT_C
-
+#endif	// CN_INCLUDE_DUMPER
+#endif	// CN_PRINT_C
