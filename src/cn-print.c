@@ -43,8 +43,9 @@ const char RgchHex[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', '
 
 bool _isWritable(cn_write_state *ws, size_t cb)
 {
-	if (ws->rgbOutput == NULL)
+	if (ws->rgbOutput == NULL) {
 		return true;
+	}
 	if ((ws->ib < 0) || (ws->ib + cb > ws->cbLeft)) {
 		ws->ib = -1;
 		return false;
@@ -194,13 +195,16 @@ void _print_encoder(const cn_cbor *cb, int depth, void *context)
 	}
 
 	if (depth > 0) {
-		if (ws->rgFlags[depth - 1] & 4)
+		if (ws->rgFlags[depth - 1] & 4) {
 			ws->rgFlags[depth] |= 1;
+		}
 		else if (ws->rgFlags[depth - 1] & 8) {
-			if (flags & 2)
+			if (flags & 2) {
 				ws->rgFlags[depth] |= 1;
-			else
+			}
+			else {
 				ws->rgFlags[depth] |= 2;
+			}
 		}
 	}
 }

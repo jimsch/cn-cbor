@@ -43,8 +43,9 @@ void cn_cbor_free(cn_cbor *cb CBOR_CONTEXT)
 			p = p1;
 		}
 		if (!(p1 = p->next)) { /* go up next */
-			if ((p1 = p->parent))
+			if ((p1 = p->parent)) {
 				p1->first_child = 0;
+			}
 		}
 		CN_CBOR_FREE_CONTEXT(p);
 		p = p1;
@@ -57,12 +58,15 @@ static double decode_half(int half)
 	int exp = (half >> 10) & 0x1f;
 	int mant = half & 0x3ff;
 	double val;
-	if (exp == 0)
+	if (exp == 0) {
 		val = ldexp(mant, -24);
-	else if (exp != 31)
+	}
+	else if (exp != 31) {
 		val = ldexp(mant + 1024, exp - 25);
-	else
+	}
+	else {
 		val = mant == 0 ? INFINITY : NAN;
+	}
 	return half & 0x8000 ? -val : val;
 }
 #endif /* CBOR_NO_FLOAT */
@@ -143,16 +147,18 @@ static cn_cbor *decode_item(struct parse_buf *pb CBOR_CONTEXT, cn_cbor *top_pare
 again:
 	TAKE(pos, ebuf, 1, ib = ntoh8p(pos));
 	if (ib == IB_BREAK) {
-		if (!(parent->flags & CN_CBOR_FL_INDEF))
+		if (!(parent->flags & CN_CBOR_FL_INDEF)) {
 			CN_CBOR_FAIL(CN_CBOR_ERR_BREAK_OUTSIDE_INDEF);
+		}
 		switch (parent->type) {
 			case CN_CBOR_BYTES:
 			case CN_CBOR_TEXT:
 				parent->type += 2; /* CN_CBOR_* -> CN_CBOR_*_CHUNKED */
 				break;
 			case CN_CBOR_MAP:
-				if (parent->length & 1)
+				if (parent->length & 1) {
 					CN_CBOR_FAIL(CN_CBOR_ERR_ODD_SIZE_INDEF_MAP);
+				}
 			default:;
 		}
 		goto complete;
@@ -162,8 +168,9 @@ again:
 	val = ai;
 
 	cb = CN_CALLOC_CONTEXT();
-	if (!cb)
+	if (!cb) {
 		CN_CBOR_FAIL(CN_CBOR_ERR_OUT_OF_MEMORY);
+	}
 
 	cb->type = mt_trans[mt];
 
@@ -275,20 +282,25 @@ again:
 	}
 fill: /* emulate loops */
 	if (parent->flags & CN_CBOR_FL_INDEF) {
-		if (parent->type == CN_CBOR_BYTES || parent->type == CN_CBOR_TEXT)
-			if (cb->type != parent->type)
+		if (parent->type == CN_CBOR_BYTES || parent->type == CN_CBOR_TEXT) {
+			if (cb->type != parent->type) {
 				CN_CBOR_FAIL(CN_CBOR_ERR_WRONG_NESTING_IN_INDEF_STRING);
+			}
+		}
 		goto again;
 	}
 	if (parent->flags & CN_CBOR_FL_COUNT) {
-		if (--parent->v.count)
+		if (--parent->v.count) {
 			goto again;
+		}
 	}
 	/* so we are done filling parent. */
 complete: /* emulate return from call */
 	if (parent == top_parent) {
-		if (pos != ebuf) /* XXX do this outside */
+		if (pos != ebuf) {
+			/* XXX do this outside */
 			CN_CBOR_FAIL(CN_CBOR_ERR_NOT_ALL_DATA_CONSUMED);
+		}
 		pb->buf = pos;
 		return cb;
 	}
