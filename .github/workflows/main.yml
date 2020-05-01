@@ -45,11 +45,12 @@ jobs:
         working-directory: ${{runner.workspace}}/build
         run: |
           cmake $GITHUB_WORKSPACE \
-          -DCOSE_C_USE_CONTEXT=${{matrix.USE_CONTEXT}} \
-          -DCOSE_C_BUILD_DOCS=OFF \
-          -DCOSE_C_COVERALLS=OFF \
-          -DCOSE_C_BUILD_TESTS=ON \
+          -DCN_CBOR_USE_CONTEXT=${{matrix.USE_CONTEXT}} \
+          -DCN_CBOR_BUILD_DOCS=OFF \
+          -DCN_CBOR_COVERALLS=OFF \
+          -DCN_CBOR_BUILD_TESTS=ON \
           -DBUILD_SHARED_LIBS=OFF \
+          -DCN_CBOR_FATAL_WARNINGS=OFF \
           ${{matrix.CMAKE_OPTIONS}}
 
       - name: Build
@@ -87,10 +88,10 @@ jobs:
           export CC=clang && \
           export CXX=clang++ && \
           cmake $GITHUB_WORKSPACE \
-          -DCOSE_C_USE_CONTEXT=${{matrix.USE_CONTEXT}} \
-          -DCOSE_C_BUILD_DOCS=OFF \
-          -DCOSE_C_BUILD_TESTS=ON \
-          -DCOSE_C_RUN_CLANG_TIDY=ON \
+          -DCN_CBOR_USE_CONTEXT=${{matrix.USE_CONTEXT}} \
+          -DCN_CBOR_BUILD_DOCS=OFF \
+          -DCN_CBOR_BUILD_TESTS=ON \
+          -DCN_CBOR_RUN_CLANG_TIDY=ON \
           ${{matrix.CMAKE_OPTIONS}}
 
       - name: Build

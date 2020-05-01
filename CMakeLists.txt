@@ -28,6 +28,7 @@ option(CN_CBOR_BUILD_DOCS "Create docs using Doxygen" OFF)
 option(CN_CBOR_BUILD_TESTS "Create tests" ON)
 option(CN_CBOR_NO_FLOATS "Build without floating point support" OFF)
 option(CN_CBOR_ALIGN_READS "Use memcpy in ntoh*p()" OFF)
+option(CN_CBOR_RUN_CLANG_TIDY "Use Clang-Tidy for static analysis" OFF)
 
 set(dist_dir ${CMAKE_BINARY_DIR}/dist)
 set(prefix ${CMAKE_INSTALL_PREFIX})
@@ -167,6 +168,20 @@ if(CN_CBOR_BUILD_DOCS)
   endif()
 endif()
 
+###############################################################################
+# DEPENDENCIES
+###############################################################################
+
+if(CN_CBOR_RUN_CLANG_TIDY)
+  find_program(
+    CLANG_TIDY_EXE
+    NAMES "clang-tidy"
+    DOC "/usr/bin/clang-tidy")
+  if(NOT CLANG_TIDY_EXE)
+    message(WARNING "clang-tidy not found.")
+  endif()
+endif(CN_CBOR_RUN_CLANG_TIDY)
+
 # ##############################################################################
 # TESTS
 # ##############################################################################
@@ -250,3 +265,19 @@ install(
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
   RUNTIME DESTINATION bin)
+
+###############################################################################
+# PRINT CONFIG
+###############################################################################
+
+message(STATUS "CN_CBOR_USE_CONTEXT:..............${CN_CBOR_USE_CONTEXT}")
+message(STATUS "CN_CBOR_FATAL_WARNINGS:...........${CN_CBOR_FATAL_WARNINGS}")
+message(STATUS "CN_CBOR_BUILD_TESTS:..............${CN_CBOR_BUILD_TESTS}")
+message(STATUS "CN_CBOR_BUILD_DOCS:...............${CN_CBOR_BUILD_DOCS}")
+message(STATUS "CMAKE_BUILD_TYPE:................${CMAKE_BUILD_TYPE}")
+message(STATUS "BUILD_SHARED_LIBS:...............${BUILD_SHARED_LIBS}")
+message(STATUS "CN_VERSION:....................${CN_VERSION}")
+message(STATUS "CMAKE_VERSION:...................${CMAKE_VERSION}")
+message(STATUS "CMAKE_C_COMPILER:................${CMAKE_C_COMPILER}")
+message(STATUS "CMAKE_CXX_COMPILER:..............${CMAKE_CXX_COMPILER}")
+message(STATUS "CLANG_TIDY_EXE:..................${CLANG_TIDY_EXE}")
