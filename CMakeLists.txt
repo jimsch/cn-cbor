@@ -180,6 +180,7 @@ if(CN_CBOR_RUN_CLANG_TIDY)
   if(NOT CLANG_TIDY_EXE)
     message(WARNING "clang-tidy not found.")
   endif()
+  set_target_properties(${PROJECT_NAME} PROPERTIES C_CLANG_TIDY "${CLANG_TIDY_EXE}")
 endif(CN_CBOR_RUN_CLANG_TIDY)
 
 # ##############################################################################
