@@ -157,20 +157,25 @@ static void _write_double(cn_write_state *ws, double val)
 			int s16 = (u32.u >> 16) & 0x8000;
 			int exp = (u32.u >> 23) & 0xff;
 			int mant = u32.u & 0x7fffff;
-			if (exp == 0 && mant == 0)
+			if (exp == 0 && mant == 0) {
 				;							   /* 0.0, -0.0 */
-			else if (exp >= 113 && exp <= 142) /* normalized */
+			}
+			else if (exp >= 113 && exp <= 142) {
+				/* normalized */
 				s16 += ((exp - 112) << 10) + (mant >> 13);
+			}
 			else if (exp >= 103 && exp < 113) { /* denorm, exp16 = 0 */
-				if (mant & ((1 << (126 - exp)) - 1))
+				if (mant & ((1 << (126 - exp)) - 1)) {
 					goto float32; /* loss of precision */
+				}
 				s16 += ((mant + 0x800000) >> (126 - exp));
 			}
 			else if (exp == 255 && mant == 0) { /* Inf */
 				s16 += 0x7c00;
 			}
-			else
+			else {
 				goto float32; /* loss of range */
+			}
 
 			ensure_writable(3);
 			u16 = s16;
