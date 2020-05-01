@@ -54,7 +54,7 @@ static bool parse_hex(char *inp, buffer *b)
 	b->ptr = malloc(b->sz);
 	for (i = 0; i < b->sz; i++) {
 #ifdef _MSC_VER
-		unsigned int iX;
+		unsigned short iX;
 		sscanf(inp + (2 * i), "%02hx", &iX);
 		b->ptr[i] = (byte)iX;
 #else

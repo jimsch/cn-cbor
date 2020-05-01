@@ -1,0 +1,99 @@
+name: CMake
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        # os: [ubuntu-18.04, windows-2019, macos-10.15]
+        os: [ubuntu-18.04, windows-2019]
+        # os: [ubuntu-18.04]
+        USE_CONTEXT: ["ON", "OFF"]
+        CMAKE_OPTIONS:
+          [
+            "-DCN_CBOR_NO_FLOATS=ON",
+            "-DCN_CBOR_ALIGN_READS=ON",
+            "-DCN_CBOR_OPTIMIZE=ON"
+          ]
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: setup (linux)
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          sudo apt install cmake-data
+
+      # - name: setup (mac)
+      #   if: startsWith(matrix.os, 'macos')
+      #   run: |
+      #     brew update
+      #     brew upgrade
+      #     brew install cmake openssl
+
+      - name: setup (windows)
+        if: startsWith(matrix.os, 'windows')
+        run: |
+          choco install openssl cmake
+
+      - name: Create Build directory
+        run: cmake -E make_directory ${{runner.workspace}}/build
+
+      - name: Configure CMake
+        shell: bash
+        working-directory: ${{runner.workspace}}/build
+        run: |
+          cmake $GITHUB_WORKSPACE \
+          -DCOSE_C_USE_CONTEXT=${{matrix.USE_CONTEXT}} \
+          -DCOSE_C_BUILD_DOCS=OFF \
+          -DCOSE_C_COVERALLS=OFF \
+          -DCOSE_C_BUILD_TESTS=ON \
+          -DBUILD_SHARED_LIBS=OFF \
+          ${{matrix.CMAKE_OPTIONS}}
+
+      - name: Build
+        working-directory: ${{runner.workspace}}/build
+        shell: bash
+        run: cmake --build .
+
+  clang-tidy:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        USE_CONTEXT: ["ON", "OFF"]
+        CMAKE_OPTIONS:
+          [
+            "-DCN_CBOR_NO_FLOATS=ON",
+            "-DCN_CBOR_ALIGN_READS=ON",
+            "-DCN_CBOR_OPTIMIZE=ON"
+          ]
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: setup (linux)
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          sudo apt install cmake-data clang clang-tidy
+
+      - name: Create Build directory
+        run: cmake -E make_directory ${{runner.workspace}}/build
+
+      - name: Configure CMake
+        shell: bash
+        working-directory: ${{runner.workspace}}/build
+        run: |
+          export CC=clang && \
+          export CXX=clang++ && \
+          cmake $GITHUB_WORKSPACE \
+          -DCOSE_C_USE_CONTEXT=${{matrix.USE_CONTEXT}} \
+          -DCOSE_C_BUILD_DOCS=OFF \
+          -DCOSE_C_BUILD_TESTS=ON \
+          -DCOSE_C_RUN_CLANG_TIDY=ON \
+          ${{matrix.CMAKE_OPTIONS}}
+
+      - name: Build
+        working-directory: ${{runner.workspace}}/build
+        shell: bash
+        run: cmake --build .
