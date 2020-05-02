@@ -314,6 +314,7 @@ again:
 					}
 					break;
 			}
+			break;
 
 		default:
 			CN_CBOR_FAIL(CN_CBOR_ERR_INVALID_PARAMETER);
