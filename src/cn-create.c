@@ -27,16 +27,11 @@ extern "C" {
 MYLIB_EXPORT
 cn_cbor* cn_cbor_bool_create(bool value CBOR_CONTEXT, cn_cbor_errback* errp)
 {
-	cn_cbor* pcn = CN_CALLOC(context);
-	if (pcn == NULL) {
-		if (errp != NULL) {
-			errp->err = CN_CBOR_ERR_OUT_OF_MEMORY;
-		}
-		return NULL;
-	}
+	cn_cbor* ret;
+	INIT_CB(ret);
 
-	pcn->type = CN_CBOR_FALSE + (value != 0);
-	return pcn;
+	ret->type = CN_CBOR_FALSE + (value != 0);
+	return ret;
 }
 
 MYLIB_EXPORT
@@ -49,52 +44,42 @@ cn_cbor* cn_cbor_simple_create(int simpleValue, CBOR_CONTEXT_COMMA cn_cbor_errba
 		return NULL;
 	}
 
-	cn_cbor* pcn = CN_CALLOC(context);
-	if (pcn == NULL) {
-		if (errp != NULL) {
-			errp->err = CN_CBOR_ERR_OUT_OF_MEMORY;
-		}
-		return NULL;
-	}
+	cn_cbor* ret;
+	INIT_CB(ret);
 
 	switch (simpleValue) {
 		case 20:
-			pcn->type = CN_CBOR_FALSE;
+			ret->type = CN_CBOR_FALSE;
 			break;
 
 		case 21:
-			pcn->type = CN_CBOR_TRUE;
+			ret->type = CN_CBOR_TRUE;
 			break;
 
 		case 22:
-			pcn->type = CN_CBOR_NULL;
+			ret->type = CN_CBOR_NULL;
 			break;
 
 		default:
-			pcn->type = CN_CBOR_SIMPLE;
-			pcn->v.uint = simpleValue;
+			ret->type = CN_CBOR_SIMPLE;
+			ret->v.uint = simpleValue;
 			break;
 	}
-	return pcn;
+	return ret;
 }
 
 MYLIB_EXPORT
-cn_cbor* cn_cbor_tag_create(int tag, cn_cbor* child, CBOR_CONTEXT_COMMA cn_cbor_errback* perr)
+cn_cbor* cn_cbor_tag_create(int tag, cn_cbor* child, CBOR_CONTEXT_COMMA cn_cbor_errback* errp)
 {
-	cn_cbor* pcnTag = CN_CALLOC(context);
-	if (pcnTag == NULL) {
-		if (perr != NULL) {
-			perr->err = CN_CBOR_ERR_OUT_OF_MEMORY;
-		}
-		return NULL;
-	}
+	cn_cbor* ret;
+	INIT_CB(ret);
 
-	pcnTag->type = CN_CBOR_TAG;
-	pcnTag->v.sint = tag;
-	pcnTag->first_child = child;
-	child->parent = pcnTag;
+	ret->type = CN_CBOR_TAG;
+	ret->v.sint = tag;
+	ret->first_child = child;
+	child->parent = ret;
 
-	return pcnTag;
+	return ret;
 }
 
 MYLIB_EXPORT
