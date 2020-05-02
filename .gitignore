@@ -4,6 +4,7 @@ new.out
 build
 Testing/Temporary
 *.pc
+*.bat
 
 # Emacs temp files
 *~

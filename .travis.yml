@@ -6,6 +6,7 @@ compiler:
 env:
   - OPTIONS=-DCN_CBOR_USE_CONTEXT=OFF
   - OPTIONS=-DCN_CBOR_USE_CONTEXT=ON
+    COVERALLS="-DCN_CBOR_COVERALLS_SEND=ON"
   - OPTIONS=-DCN_CBOR_NO_FLOATS=ON
   - OPTIONS=-DCN_CBOR_ALIGN_READS=ON
 
@@ -16,5 +17,12 @@ addons:
     packages:
       - cmake
       - cmake-data
+
 script:
-- "./build.sh all test"
+  - cmake --version
+  - mkdir build
+  - cd build && cmake $OPTIONS $COVERALLS .. && make all test
+
+after_success:
+  - make coveralls
+

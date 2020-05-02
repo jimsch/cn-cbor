@@ -15,6 +15,9 @@ function(create_test name)
 endfunction()
 
 create_test(cbor)
+# create_test(file)
+create_test(memory)
+target_sources(memory_test PRIVATE context.c)
 include(CTest)
 
 if(APPLE)

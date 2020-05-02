@@ -43,14 +43,13 @@ static uint64_t hton64p(const uint8_t *p)
 
 typedef struct _write_state {
 	uint8_t *buf;
-	ssize_t offset;
-	ssize_t size;
+	size_t offset;
+	size_t size;
 } cn_write_state;
 
 #define ensure_writable(sz)                                                          \
 	if ((ws->buf != NULL) && ((ws->offset < 0) || (ws->offset + (sz) > ws->size))) { \
-		ws->offset = -1;                                                             \
-		return;                                                                      \
+		return false;                                                                \
 	}
 
 #define write_byte_and_data(b, data, sz)            \
@@ -75,7 +74,7 @@ typedef struct _write_state {
 	ensure_writable(1);       \
 	write_byte(b);
 
-static uint8_t _xlate[] = {
+static const uint8_t _xlate[] = {
 	IB_FALSE,	 /* CN_CBOR_FALSE */
 	IB_TRUE,	 /* CN_CBOR_TRUE */
 	IB_NIL,		 /* CN_CBOR_NULL */
@@ -99,16 +98,13 @@ static inline bool is_indefinite(const cn_cbor *cb)
 	return (cb->flags & CN_CBOR_FL_INDEF) != 0;
 }
 
-static void _write_positive(cn_write_state *ws, cn_cbor_type typ, uint64_t val)
+static bool _write_positive(cn_write_state *ws, cn_cbor_type typ, uint64_t val)
 {
-	uint8_t ib;
-
 	assert((size_t)typ < sizeof(_xlate));
 
-	ib = _xlate[typ];
+	const uint8_t ib = _xlate[typ];
 	if (ib == 0xFF) {
-		ws->offset = -1;
-		return;
+		return false;
 	}
 
 	if (val < 24) {
@@ -139,13 +135,15 @@ static void _write_positive(cn_write_state *ws, cn_cbor_type typ, uint64_t val)
 		be64 = hton64p((const uint8_t *)&val);
 		write_byte_and_data(ib | 27, (const void *)&be64, 8);
 	}
+
+	return true;
 }
 
 #ifndef CBOR_NO_FLOAT
-static void _write_double(cn_write_state *ws, double val)
+static bool _write_double(cn_write_state *ws, double val, int size)
 {
-	float float_val = val;
-	if (float_val == val) { /* 32 bits is enough and we aren't NaN */
+	float float_val = (float)val;
+	if (float_val == val && (size != 64)) { /* 32 bits is enough and we aren't NaN */
 		uint32_t be32;
 		uint16_t be16, u16;
 		union {
@@ -153,12 +151,13 @@ static void _write_double(cn_write_state *ws, double val)
 			uint32_t u;
 		} u32;
 		u32.f = float_val;
-		if ((u32.u & 0x1FFF) == 0) { /* worth trying half */
+
+		if ((u32.u & 0x1FFF) == 0 && (size == 0)) { /* worth trying half */
 			int s16 = (u32.u >> 16) & 0x8000;
-			int exp = (u32.u >> 23) & 0xff;
-			int mant = u32.u & 0x7fffff;
+			int exp = (int)((u32.u >> 23) & 0xff);
+			int mant = (int)(u32.u & 0x7fffff);
 			if (exp == 0 && mant == 0) {
-				;							   /* 0.0, -0.0 */
+				; /* 0.0, -0.0 */
 			}
 			else if (exp >= 113 && exp <= 142) {
 				/* normalized */
@@ -182,7 +181,7 @@ static void _write_double(cn_write_state *ws, double val)
 			be16 = hton16p((const uint8_t *)&u16);
 
 			write_byte_and_data(IB_PRIM | 25, (const void *)&be16, 2);
-			return;
+			return true;
 		}
 	float32:
 		ensure_writable(5);
@@ -209,18 +208,22 @@ static void _write_double(cn_write_state *ws, double val)
 
 		write_byte_and_data(IB_PRIM | 27, (const void *)&be64, 8);
 	}
+	return true;
 }
 #endif /* CBOR_NO_FLOAT */
 
 // TODO: make public?
-typedef void (*cn_visit_func)(const cn_cbor *cb, int depth, void *context);
-void _visit(const cn_cbor *cb, cn_visit_func visitor, cn_visit_func breaker, void *context)
+typedef bool (*cn_visit_func)(const cn_cbor *cb, int depth, void *context);
+bool _visit(const cn_cbor *cb, cn_visit_func visitor, cn_visit_func breaker, void *context)
 {
 	const cn_cbor *p = cb;
 	int depth = 0;
 	while (p) {
 	visit:
-		visitor(p, depth, context);
+		if (!visitor(p, depth, context)) {
+			return false;
+		}
+
 		if (p->first_child) {
 			p = p->first_child;
 			depth++;
@@ -228,10 +231,14 @@ void _visit(const cn_cbor *cb, cn_visit_func visitor, cn_visit_func breaker, voi
 		else {
 			// Empty indefinite
 #ifdef CN_INCLUDE_DUMPER
-			breaker(p, depth, context);
+			if (!breaker(p, depth, context)) {
+				return false;
+			}
 #else
 			if (is_indefinite(p)) {
-				breaker(p, depth, context);
+				if (!breaker(p, depth, context)) {
+					return false;
+				}
 			}
 #endif
 			if (p->next) {
@@ -241,10 +248,14 @@ void _visit(const cn_cbor *cb, cn_visit_func visitor, cn_visit_func breaker, voi
 				while (p->parent) {
 					depth--;
 #ifdef CN_INCLUDE_DUMPER
-					breaker(p->parent, depth, context);
+					if (!breaker(p->parent, depth, context)) {
+						return false;
+					}
 #else
 					if (is_indefinite(p->parent)) {
-						breaker(p->parent, depth, context);
+						if (!breaker(p->parent, depth, context)) {
+							return false;
+						}
 					}
 #endif
 					if (p->parent->next) {
@@ -253,19 +264,19 @@ void _visit(const cn_cbor *cb, cn_visit_func visitor, cn_visit_func breaker, voi
 					}
 					p = p->parent;
 				}
-				return;
+				return true;
 			}
 		}
 	}
+	return true;
 }
 
-#define CHECK(st)         \
-	(st);                 \
-	if (ws->offset < 0) { \
-		return;           \
+#define CHECK(st)     \
+	if (!(st)) {      \
+		return false; \
 	}
 
-void _encoder_visitor(const cn_cbor *cb, int depth, void *context)
+bool _encoder_visitor(const cn_cbor *cb, int depth, void *context)
 {
 	cn_write_state *ws = context;
 	UNUSED_PARAM(depth);
@@ -279,6 +290,7 @@ void _encoder_visitor(const cn_cbor *cb, int depth, void *context)
 				CHECK(_write_positive(ws, CN_CBOR_ARRAY, cb->length));
 			}
 			break;
+
 		case CN_CBOR_MAP:
 			if (is_indefinite(cb)) {
 				write_byte_ensured(IB_MAP | AI_INDEF);
@@ -287,6 +299,7 @@ void _encoder_visitor(const cn_cbor *cb, int depth, void *context)
 				CHECK(_write_positive(ws, CN_CBOR_MAP, cb->length / 2));
 			}
 			break;
+
 		case CN_CBOR_BYTES_CHUNKED:
 		case CN_CBOR_TEXT_CHUNKED:
 			write_byte_ensured(_xlate[cb->type] | AI_INDEF);
@@ -322,21 +335,23 @@ void _encoder_visitor(const cn_cbor *cb, int depth, void *context)
 
 #ifndef CBOR_NO_FLOAT
 		case CN_CBOR_DOUBLE:
-			CHECK(_write_double(ws, cb->v.dbl));
+			CHECK(_write_double(ws, cb->v.dbl, (cb->flags & CN_CBOR_FL_KEEP_FLOAT_SIZE) ? 64 : 0));
 			break;
 
 		case CN_CBOR_FLOAT:
-			CHECK(_write_double(ws, cb->v.f));
-#endif /* CBOR_NO_FLOAT */
+			CHECK(_write_double(ws, cb->v.f, (cb->flags & CN_CBOR_FL_KEEP_FLOAT_SIZE) ? 32 : 0));
 			break;
+#endif /* CBOR_NO_FLOAT */
 
 		case CN_CBOR_INVALID:
-			ws->offset = -1;
-			break;
+		default:
+			return false;
 	}
+
+	return true;
 }
 
-void _encoder_breaker(const cn_cbor *cb, int depth, void *context)
+bool _encoder_breaker(const cn_cbor *cb, int depth, void *context)
 {
 	cn_write_state *ws = context;
 	UNUSED_PARAM(cb);
@@ -348,19 +363,19 @@ void _encoder_breaker(const cn_cbor *cb, int depth, void *context)
 #ifdef CN_INCLUDE_DUMPER
 	}
 #endif
+	return true;
 }
 
 ssize_t cn_cbor_encoder_write(uint8_t *buf, size_t buf_offset, size_t buf_size, const cn_cbor *cb)
 {
-	cn_write_state ws = {buf, buf_offset, buf_size};
+	cn_write_state ws = {buf, buf_offset, buf_size - buf_offset};
 	if (!ws.buf && ws.size <= 0) {
 		ws.size = (ssize_t)(((size_t)-1) / 2);
 	}
-	_visit(cb, _encoder_visitor, _encoder_breaker, &ws);
-	if (ws.offset < 0) {
+	if (!_visit(cb, _encoder_visitor, _encoder_breaker, &ws)) {
 		return -1;
 	}
-	return ws.offset - buf_offset;
+	return (ssize_t)(ws.offset - buf_offset);
 }
 
 #ifdef __cplusplus
