@@ -32,11 +32,10 @@ cn_cbor* cn_cbor_mapget_int(const cn_cbor* cb, int key)
 MYLIB_EXPORT
 cn_cbor* cn_cbor_mapget_string(const cn_cbor* cb, const char* key)
 {
-	cn_cbor* cp;
-	int keylen;
-	assert(cb);
-	assert(key);
-	keylen = strlen(key);
+	cn_cbor* cp = NULL;
+	assert(cb != NULL);
+	assert(key != NULL);
+	size_t keylen = strlen(key);
 	for (cp = cb->first_child; cp && cp->next; cp = cp->next->next) {
 		switch (cp->type) {
 			case CN_CBOR_TEXT:	// fall-through
