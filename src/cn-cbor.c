@@ -33,6 +33,12 @@ extern "C" {
 	} while (0)
 
 MYLIB_EXPORT
+void cn_cbor_dont_free_data(cn_cbor *cbor)
+{
+	cbor->flags |= CN_CBOR_FL_EXT_DATA;
+}
+
+MYLIB_EXPORT
 void cn_cbor_free(cn_cbor *cb CBOR_CONTEXT)
 {
 	cn_cbor *p = (cn_cbor *)cb;
@@ -47,7 +53,21 @@ void cn_cbor_free(cn_cbor *cb CBOR_CONTEXT)
 				p1->first_child = 0;
 			}
 		}
-		CN_CBOR_FREE_CONTEXT(p);
+
+		if ((p->flags & CN_CBOR_FL_EXT_DATA) == 0) {
+			switch (p->type) {
+				case CN_CBOR_BYTES:
+				case CN_CBOR_TEXT:
+					CN_CBOR_FREE_CONTEXT(p->v.bytes);
+					break;
+
+				default:
+					break;
+			}
+		}
+		if ((p->flags & CN_CBOR_FL_EXT_SELF) == 0) {
+			CN_CBOR_FREE_CONTEXT(p);
+		}
 		p = p1;
 	}
 }
@@ -128,10 +148,10 @@ static cn_cbor *decode_item(struct parse_buf *pb CBOR_CONTEXT, cn_cbor *top_pare
 	unsigned char *pos = pb->buf;
 	unsigned char *ebuf = pb->ebuf;
 	cn_cbor *parent = top_parent;
-	int ib;
-	unsigned int mt;
-	int ai;
-	uint64_t val;
+	int ib = 0;
+	unsigned int mt = 0;
+	int ai = 0;
+	uint64_t val = 0;
 	cn_cbor *cb = NULL;
 #ifndef CBOR_NO_FLOAT
 	union {
@@ -155,11 +175,18 @@ again:
 			case CN_CBOR_TEXT:
 				parent->type += 2; /* CN_CBOR_* -> CN_CBOR_*_CHUNKED */
 				break;
+
 			case CN_CBOR_MAP:
 				if (parent->length & 1) {
 					CN_CBOR_FAIL(CN_CBOR_ERR_ODD_SIZE_INDEF_MAP);
 				}
-			default:;
+				break;
+
+			case CN_CBOR_ARRAY:
+				break;
+
+			default:
+				CN_CBOR_FAIL(CN_CBOR_ERR_WRONG_NESTING_IN_INDEF_STRING);
 		}
 		goto complete;
 	}
@@ -209,7 +236,10 @@ again:
 			else {
 				CN_CBOR_FAIL(CN_CBOR_ERR_MT_UNDEF_FOR_INDEF);
 			}
+		default:
+			break;
 	}
+
 	// process content
 	switch (mt) {
 		case MT_UNSIGNED:
@@ -223,6 +253,7 @@ again:
 			cb->v.str = (char *)pos;
 			cb->length = (size_t)val;
 			TAKE(pos, ebuf, val, ;);
+			cb->flags |= CN_CBOR_FL_EXT_DATA;
 			break;
 		case MT_MAP:
 			val <<= 1;
@@ -278,8 +309,16 @@ again:
 					break;
 				default:
 					cb->v.uint = val;
+					if (24 <= val && val < 32) {
+						CN_CBOR_FAIL(CN_CBOR_ERR_INVALID_PARAMETER);
+					}
+					break;
 			}
+
+		default:
+			CN_CBOR_FAIL(CN_CBOR_ERR_INVALID_PARAMETER);
 	}
+
 fill: /* emulate loops */
 	if (parent->flags & CN_CBOR_FL_INDEF) {
 		if (parent->type == CN_CBOR_BYTES || parent->type == CN_CBOR_TEXT) {
@@ -320,7 +359,7 @@ cn_cbor *cn_cbor_decode(const unsigned char *buf, size_t len CBOR_CONTEXT, cn_cb
 {
 	cn_cbor catcher = {CN_CBOR_INVALID, 0, {0}, 0, NULL, NULL, NULL, NULL};
 	struct parse_buf pb;
-	cn_cbor *ret;
+	cn_cbor *ret = NULL;
 
 	pb.buf = (unsigned char *)buf;
 	pb.ebuf = (unsigned char *)buf + len;

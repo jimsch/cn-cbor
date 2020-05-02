@@ -29,15 +29,15 @@ extern "C" {
 
 typedef struct _write_state {
 	char *rgbOutput;
-	ssize_t ib;
+	size_t ib;
 	size_t cbLeft;
 	uint8_t *rgFlags;
 	const char *szIndentWith;
 	const char *szEndOfLine;
 } cn_write_state;
 
-typedef void (*cn_visit_func)(const cn_cbor *cb, int depth, void *context);
-extern void _visit(const cn_cbor *cb, cn_visit_func visitor, cn_visit_func breaker, void *context);
+typedef bool (*cn_visit_func)(const cn_cbor *cb, int depth, void *context);
+extern bool _visit(const cn_cbor *cb, cn_visit_func visitor, cn_visit_func breaker, void *context);
 
 const char RgchHex[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
@@ -53,40 +53,44 @@ bool _isWritable(cn_write_state *ws, size_t cb)
 	return true;
 }
 
-void write_data(cn_write_state *ws, const char *sz, size_t cb)
+bool write_data(cn_write_state *ws, const char *sz, size_t cb)
 {
 	if (_isWritable(ws, cb)) {
-		if (ws->rgbOutput != NULL)
+		if (ws->rgbOutput != NULL) {
 			memcpy(ws->rgbOutput + ws->ib, sz, cb);
+		}
 		ws->ib += cb;
+		return true;
 	}
+	return false;
 }
 
-void _doIndent(cn_write_state *ws, int depth)
+bool _doIndent(cn_write_state *ws, int depth)
 {
 	int i;
 	char *sz = ws->rgbOutput + ws->ib;
-	size_t cbIndentWith = strlen(ws->szIndentWith);
-	int cbIndent = depth * cbIndentWith;
+	const size_t cbIndentWith = strlen(ws->szIndentWith);
+	const size_t cbIndent = depth * cbIndentWith;
 
 	if (ws->rgbOutput == NULL) {
 		ws->ib += cbIndent;
-		return;
+		return true;
 	}
 
-	if (_isWritable(ws, cbIndent)) {
-		for (i = 0; i < depth; i++) {
-			memcpy(sz, ws->szIndentWith, cbIndentWith);
-			sz += cbIndentWith;
-		}
+	if (!_isWritable(ws, cbIndent)) {
+		return false;
+	}
+	for (i = 0; i < depth; i++) {
+		memcpy(sz, ws->szIndentWith, cbIndentWith);
+		sz += cbIndentWith;
 	}
 
 	ws->ib += cbIndent;
 
-	return;
+	return true;
 }
 
-void _print_encoder(const cn_cbor *cb, int depth, void *context)
+bool _print_encoder(const cn_cbor *cb, int depth, void *context)
 {
 	int i;
 	char rgchT[256];
@@ -207,17 +211,22 @@ void _print_encoder(const cn_cbor *cb, int depth, void *context)
 			}
 		}
 	}
+	return true;
 }
 
-void _print_breaker(const cn_cbor *cb, int depth, void *context)
+bool _print_breaker(const cn_cbor *cb, int depth, void *context)
 {
 	cn_write_state *ws = (cn_write_state *)context;
 
 	switch (cb->type) {
 		case CN_CBOR_ARRAY:
 			if (ws->szIndentWith) {
-				write_data(ws, ws->szEndOfLine, strlen(ws->szEndOfLine));
-				_doIndent(ws, depth);
+				if (!write_data(ws, ws->szEndOfLine, strlen(ws->szEndOfLine))) {
+					return false;
+				}
+				if (!_doIndent(ws, depth)) {
+					return false;
+				}
 			}
 
 			write_data(ws, "]", 1);
@@ -237,6 +246,7 @@ void _print_breaker(const cn_cbor *cb, int depth, void *context)
 		default:
 			break;
 	}
+	return true;
 }
 
 ssize_t cn_cbor_printer_write(char *rgbBuffer,
@@ -249,10 +259,14 @@ ssize_t cn_cbor_printer_write(char *rgbBuffer,
 	char rgchZero[1] = {0};
 
 	cn_write_state ws = {rgbBuffer, 0, cbBuffer, flags, szIndentWith, szEndOfLine};
-	_visit(cb, _print_encoder, _print_breaker, &ws);
-	write_data(&ws, rgchZero, 1);
+	if (!_visit(cb, _print_encoder, _print_breaker, &ws)) {
+		return -1;
+	}
+	if (!write_data(&ws, rgchZero, 1)) {
+		return -1;
+	}
 
-	return ws.ib;
+	return (ssize_t)ws.ib;
 }
 
 #ifdef EMACS_INDENTATION_HELPER
