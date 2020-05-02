@@ -5,9 +5,9 @@
 #include <string.h>
 
 #include "cn-cbor/cn-cbor.h"
-#include "context.h"
 
 #ifdef USE_CBOR_CONTEXT
+#include "context.h"
 #define CBOR_CONTEXT_PARAM , NULL
 #else
 #define CBOR_CONTEXT_PARAM
@@ -15,6 +15,7 @@
 
 int CFails;
 
+#ifdef USE_CBOR_CONTEXT
 void CreateTests()
 {
 	cn_cbor_context* context = CreateContext(-1);
@@ -198,12 +199,14 @@ void EncoderTests()
 		CFails += 1;
 	}
 }
+#endif
 
 int main(void)
 {
+#ifdef USE_CBOR_CONTEXT
 	CreateTests();
 	EncoderTests();
 	DecoderTests();
-
+#endif
 	return CFails;
 }

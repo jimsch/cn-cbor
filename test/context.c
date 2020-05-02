@@ -15,8 +15,8 @@ typedef unsigned char byte;
 typedef struct {
 	cn_cbor_context context;
 	byte *pFirst;
-	unsigned int iFailLeft;
-	int allocCount;
+	ssize_t iFailLeft;
+	ssize_t allocCount;
 } MyContext;
 
 typedef struct _MyItem {
