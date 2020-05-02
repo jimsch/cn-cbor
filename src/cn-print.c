@@ -46,7 +46,7 @@ bool _isWritable(cn_write_state *ws, size_t cb)
 	if (ws->rgbOutput == NULL) {
 		return true;
 	}
-	if ((ws->ib < 0) || (ws->ib + cb > ws->cbLeft)) {
+	if (ws->ib + cb > ws->cbLeft) {
 		ws->ib = -1;
 		return false;
 	}
@@ -92,7 +92,7 @@ bool _doIndent(cn_write_state *ws, int depth)
 
 bool _print_encoder(const cn_cbor *cb, int depth, void *context)
 {
-	int i;
+	size_t i;
 	char rgchT[256];
 	int cch;
 	cn_write_state *ws = (cn_write_state *)context;
