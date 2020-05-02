@@ -58,7 +58,7 @@ void cn_cbor_free(cn_cbor *cb CBOR_CONTEXT)
 			switch (p->type) {
 				case CN_CBOR_BYTES:
 				case CN_CBOR_TEXT:
-					CN_CBOR_FREE_CONTEXT(p->v.bytes);
+					CN_CBOR_FREE_CONTEXT((void *) p->v.bytes);
 					break;
 
 				default:
@@ -138,10 +138,10 @@ struct parse_buf {
 };
 
 #define TAKE(pos, ebuf, n, stmt)               \
-	if (n > (size_t)(ebuf - pos))              \
+	if ((n) > (size_t)((ebuf) - (pos)))          \
 		CN_CBOR_FAIL(CN_CBOR_ERR_OUT_OF_DATA); \
 	stmt;                                      \
-	pos += n;
+	(pos) += (n);
 
 static cn_cbor *decode_item(struct parse_buf *pb CBOR_CONTEXT, cn_cbor *top_parent)
 {
