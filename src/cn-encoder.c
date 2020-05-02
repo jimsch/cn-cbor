@@ -48,7 +48,7 @@ typedef struct _write_state {
 } cn_write_state;
 
 #define ensure_writable(sz)                                                          \
-	if ((ws->buf != NULL) && ((ws->offset < 0) || (ws->offset + (sz) > ws->size))) { \
+	if ((ws->buf != NULL) && (ws->offset + (sz) > ws->size)) { \
 		return false;                                                                \
 	}
 
