@@ -24,7 +24,7 @@ void CreateTests()
 	cn_cbor* cbor = cn_cbor_map_create(context, NULL);
 	cn_cbor_free(cbor, context);
 
-	byte* pb = (byte*)context->calloc_func(10, 10, context);
+	uint8_t* pb = (uint8_t*)context->calloc_func(10, 10, context);
 	cbor = cn_cbor_data_create2(pb, 10, 0, context, NULL);
 	cn_cbor_free(cbor, context);
 
@@ -131,10 +131,10 @@ void EncoderTests()
 	cn_cbor_array_append(cborRoot, cbor, NULL);
 
 	cbor = cn_cbor_chunked_create(CN_CBOR_BYTES, context, NULL);
-	byte* pb = context->calloc_func(10, 10, context);
+	uint8_t* pb = context->calloc_func(10, 10, context);
 	cbor2 = cn_cbor_data_create2(pb, 100, 0, context, NULL);
 	cn_cbor_chunked_append(cbor, cbor2, NULL);
-	byte data2[20] = {1, 2, 3, 4, 5, 6, 7};
+	uint8_t data2[20] = {1, 2, 3, 4, 5, 6, 7};
 	cbor2 = cn_cbor_data_create(data2, 20, context, NULL);
 	cn_cbor_chunked_append(cbor, cbor2, NULL);
 	cn_cbor_array_append(cborRoot, cbor, NULL);
@@ -169,7 +169,7 @@ void EncoderTests()
 #endif
 
 	ssize_t cb = cn_cbor_encoder_write(NULL, 0, 0, cborRoot);
-	pb = (byte*)context->calloc_func(cb + 2, 1, context);
+	pb = (uint8_t*)context->calloc_func(cb + 2, 1, context);
 
 	ssize_t cb2 = cn_cbor_encoder_write(pb, 0, cb - 1, cborRoot);
 	if (cb2 != -1) {
