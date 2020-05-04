@@ -249,8 +249,8 @@ again:
 		case MT_TEXT:
 			cb->v.str = (char *)pos;
 			cb->length = (size_t)val;
-			TAKE(pos, ebuf, val, ;);
 			cb->flags |= CN_CBOR_FL_EXT_DATA;
+			TAKE(pos, ebuf, val, ;);
 			break;
 		case MT_MAP:
 			val <<= 1;
