@@ -101,6 +101,9 @@ static inline bool is_indefinite(const cn_cbor *cb)
 static bool _write_positive(cn_write_state *ws, cn_cbor_type typ, uint64_t val)
 {
 	assert((size_t)typ < sizeof(_xlate));
+	if (typ >= (int) sizeof(_xlate)) {
+		return false;
+	}
 
 	const uint8_t ib = _xlate[typ];
 	if (ib == 0xFF) {

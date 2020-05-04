@@ -18,7 +18,10 @@ int CFails;
 #ifdef USE_CBOR_CONTEXT
 void CreateTests()
 {
-	cn_cbor_context* context = CreateContext(-1);
+	cn_cbor_context* context = NULL;
+
+	
+	context = CreateContext(-1);
 
 	//  Check the simple create/delete for memory leaks.
 
@@ -94,109 +97,268 @@ void CreateTests()
 	if (IsContextEmpty(context) > 0) {
 		CFails += 1;
 	}
+
+	
 }
 
 void DecoderTests() {}
 
 void EncoderTests()
 {
-	cn_cbor_context* context = CreateContext(-1);
+	bool finished = false;
+	for (int passNumber = 0; passNumber < 10000 && !finished; passNumber++) {
+		cn_cbor* cborRoot = NULL;
+		cn_cbor* cbor = NULL;
+		cn_cbor* cbor2 = NULL;
+		uint8_t* pb = NULL;
+		char* s = NULL;
 
-	cn_cbor* cborRoot = cn_cbor_array_create(context, NULL);
+		cn_cbor_context* context = CreateContext(passNumber);
+		if (context == NULL) {
+			CFails += 1;
+			return;
+		}
 
-	cn_cbor* cbor = cn_cbor_array_create(context, NULL);
-	cbor->flags |= CN_CBOR_FL_INDEF;
+		cborRoot = cn_cbor_array_create(context, NULL);
+		if (cborRoot == NULL) {
+			goto errorReturn;
+		}
 
-	cn_cbor* cbor2 = cn_cbor_simple_create(22, context, NULL);
-	cn_cbor_array_append(cbor, cbor2, NULL);
-	cbor2 = cn_cbor_simple_create(21, context, NULL);
-	cn_cbor_array_append(cbor, cbor2, NULL);
-	cn_cbor_array_append(cborRoot, cbor, NULL);
+		cbor = cn_cbor_array_create(context, NULL);
+		if (cbor == NULL) {
+			goto errorReturn;
+		}
+		cbor->flags |= CN_CBOR_FL_INDEF;
 
-	cbor = cn_cbor_bool_create(true, context, NULL);
-	cn_cbor_array_append(cborRoot, cbor, NULL);
+		cbor2 = cn_cbor_simple_create(22, context, NULL);
+		if (cbor2 == NULL) {
+			goto errorReturn;
+		}
+		cn_cbor_array_append(cbor, cbor2, NULL);
+		cbor2 = NULL;
 
-	cbor = cn_cbor_map_create(context, NULL);
-	cbor2 = cn_cbor_string_create("Text1", context, NULL);
-	cn_cbor_mapput_int(cbor, 5, cbor2, context, NULL);
-	cbor2 = cn_cbor_int_create(99, context, NULL);
-	cn_cbor_mapput_string(cbor, "key", cbor2, context, NULL);
-	cn_cbor_array_append(cborRoot, cbor, NULL);
+		cbor2 = cn_cbor_simple_create(21, context, NULL);
+		if (cbor2 == NULL) {
+			goto errorReturn;
+		}
+		cn_cbor_array_append(cbor, cbor2, NULL);
+		cbor2 = NULL;
 
-	cbor = cn_cbor_map_create(context, NULL);
-	cbor->flags |= CN_CBOR_FL_INDEF;
-	cbor2 = cn_cbor_string_create("Text1", context, NULL);
-	cn_cbor_mapput_int(cbor, 5, cbor2, context, NULL);
-	cbor2 = cn_cbor_int_create(99, context, NULL);
-	cn_cbor_mapput_string(cbor, "key", cbor2, context, NULL);
-	cn_cbor_array_append(cborRoot, cbor, NULL);
+		cn_cbor_array_append(cborRoot, cbor, NULL);
+		cbor = NULL;
 
-	cbor = cn_cbor_chunked_create(CN_CBOR_BYTES, context, NULL);
-	uint8_t* pb = context->calloc_func(10, 10, context);
-	cbor2 = cn_cbor_data_create2(pb, 100, 0, context, NULL);
-	cn_cbor_chunked_append(cbor, cbor2, NULL);
-	uint8_t data2[20] = {1, 2, 3, 4, 5, 6, 7};
-	cbor2 = cn_cbor_data_create(data2, 20, context, NULL);
-	cn_cbor_chunked_append(cbor, cbor2, NULL);
-	cn_cbor_array_append(cborRoot, cbor, NULL);
+		cbor = cn_cbor_bool_create(true, context, NULL);
+		if (cbor == NULL) {
+			goto errorReturn;
+		}
+		cn_cbor_array_append(cborRoot, cbor, NULL);
+		cbor = NULL;
 
-	cbor = cn_cbor_chunked_create(CN_CBOR_TEXT, context, NULL);
-	cbor2 = cn_cbor_string_create("This is a string", context, NULL);
-	cn_cbor_chunked_append(cbor, cbor2, NULL);
-	char* s = context->calloc_func(20, 1, context);
-	strcpy(s, "Hi Mom");
-	cbor2 = cn_cbor_string_create2(s, 0, context, NULL);
-	cn_cbor_chunked_append(cbor, cbor2, NULL);
-	cn_cbor_array_append(cborRoot, cbor, NULL);
+		cbor = cn_cbor_map_create(context, NULL);
+		if (cbor == NULL) {
+			goto errorReturn;
+		}
 
-	cbor = cn_cbor_simple_create(4, context, NULL);
-	cbor = cn_cbor_tag_create(99, cbor, context, NULL);
-	cn_cbor_array_append(cborRoot, cbor, NULL);
+		cbor2 = cn_cbor_string_create("Text1", context, NULL);
+		if (cbor2 == NULL) {
+			goto errorReturn;
+		}
+		if (!cn_cbor_mapput_int(cbor, 5, cbor2, context, NULL)) {
+			goto errorReturn;
+		};
+		cbor2 = NULL;
+
+		cbor2 = cn_cbor_int_create(99, context, NULL);
+		if (cbor2 == NULL) {
+			goto errorReturn;
+		}
+		if (!cn_cbor_mapput_string(cbor, "key", cbor2, context, NULL)) {
+			goto errorReturn;
+		}
+		cbor2 = NULL;
+
+		cn_cbor_array_append(cborRoot, cbor, NULL);
+		cbor = NULL;
+
+		cbor = cn_cbor_map_create(context, NULL);
+		if (cbor == NULL) {
+			goto errorReturn;
+		}
+		cbor->flags |= CN_CBOR_FL_INDEF;
+
+		cbor2 = cn_cbor_string_create("Text1", context, NULL);
+		if (cbor2 == NULL) {
+			goto errorReturn;
+		}
+		if (!cn_cbor_mapput_int(cbor, 5, cbor2, context, NULL)) {
+			goto errorReturn;
+		}
+		cbor2 = NULL;
+
+		cbor2 = cn_cbor_int_create(99, context, NULL);
+		if (cbor2 == NULL) {
+			goto errorReturn;
+		}
+		
+		if (!cn_cbor_mapput_string(cbor, "key", cbor2, context, NULL)) {
+			goto errorReturn;
+		}
+		cbor2 = NULL;
+
+		cn_cbor_array_append(cborRoot, cbor, NULL);
+		cbor = NULL;
+
+		cbor = cn_cbor_chunked_create(CN_CBOR_BYTES, context, NULL);
+		if (cbor == NULL) {
+			goto errorReturn;
+		}
+		pb = context->calloc_func(10, 10, context);
+		cbor2 = cn_cbor_data_create2(pb, 100, 0, context, NULL);
+		if (cbor2 == NULL) {
+			goto errorReturn;
+		}
+		pb = NULL;
+
+		cn_cbor_chunked_append(cbor, cbor2, NULL);
+		cbor2 = NULL;
+
+		uint8_t data2[20] = {1, 2, 3, 4, 5, 6, 7};
+		cbor2 = cn_cbor_data_create(data2, 20, context, NULL);
+		if (cbor2 == NULL) {
+			goto errorReturn;
+		}
+		cn_cbor_chunked_append(cbor, cbor2, NULL);
+		cbor2 = NULL;
+
+		cn_cbor_array_append(cborRoot, cbor, NULL);
+		cbor = NULL;
+
+		cbor = cn_cbor_chunked_create(CN_CBOR_TEXT, context, NULL);
+		if (cbor == NULL) {
+			goto errorReturn;
+		}
+
+		cbor2 = cn_cbor_string_create("This is a string", context, NULL);
+		if (cbor2 == NULL) {
+			goto errorReturn;
+		}
+		cn_cbor_chunked_append(cbor, cbor2, NULL);
+		cbor2 = NULL;
+
+		s = context->calloc_func(20, 1, context);
+		if (s == NULL) {
+			goto errorReturn;
+		}
+		strcpy(s, "Hi Mom");
+		cbor2 = cn_cbor_string_create2(s, 0, context, NULL);
+		if (cbor2 == NULL) {
+			goto errorReturn;
+		}
+		s = NULL;
+
+		cn_cbor_chunked_append(cbor, cbor2, NULL);
+		cbor2 = NULL;
+
+		cn_cbor_array_append(cborRoot, cbor, NULL);
+		cbor = NULL;
+
+		cbor = cn_cbor_simple_create(4, context, NULL);
+		if (cbor == NULL) {
+			goto errorReturn;
+		}
+		cbor2 = cn_cbor_tag_create(99, cbor, context, NULL);
+		if (cbor2 == NULL) {
+			goto errorReturn;
+		}
+		cbor = NULL;
+		cn_cbor_array_append(cborRoot, cbor2, NULL);
+		cbor2 = NULL;
 
 #ifndef CBOR_NO_FLOATS
-	cbor = cn_cbor_float_create(9, context, NULL);
-	cn_cbor_array_append(cborRoot, cbor, NULL);
+		cbor = cn_cbor_float_create(9, context, NULL);
+		if (cbor == NULL) {
+			goto errorReturn;
+		}
+		cn_cbor_array_append(cborRoot, cbor, NULL);
+		cbor = NULL;
 
-	cbor = cn_cbor_double_create(33.225932523223, context, NULL);
-	cn_cbor_array_append(cborRoot, cbor, NULL);
+		cbor = cn_cbor_double_create(33.225932523223, context, NULL);
+		if (cbor == NULL) {
+			goto errorReturn;
+		}
+		cn_cbor_array_append(cborRoot, cbor, NULL);
+		cbor = NULL;
 
-	cbor = cn_cbor_float_create(9, context, NULL);
-	cbor->flags |= CN_CBOR_FL_KEEP_FLOAT_SIZE;
-	cn_cbor_array_append(cborRoot, cbor, NULL);
+		cbor = cn_cbor_float_create(9, context, NULL);
+		if (cbor == NULL) {
+			goto errorReturn;
+		}
+		cbor->flags |= CN_CBOR_FL_KEEP_FLOAT_SIZE;
+		cn_cbor_array_append(cborRoot, cbor, NULL);
+		cbor = NULL;
 
-	cbor = cn_cbor_double_create(9, context, NULL);
-	cbor->flags |= CN_CBOR_FL_KEEP_FLOAT_SIZE;
-	cn_cbor_array_append(cborRoot, cbor, NULL);
+		cbor = cn_cbor_double_create(9, context, NULL);
+		if (cbor == NULL) {
+			goto errorReturn;
+		}
+		cbor->flags |= CN_CBOR_FL_KEEP_FLOAT_SIZE;
+		cn_cbor_array_append(cborRoot, cbor, NULL);
+		cbor = NULL;
 #endif
 
-	ssize_t cb = cn_cbor_encoder_write(NULL, 0, 0, cborRoot);
-	pb = (uint8_t*)context->calloc_func(cb + 2, 1, context);
+		ssize_t cb = cn_cbor_encoder_write(NULL, 0, 0, cborRoot);
+		pb = (uint8_t*)context->calloc_func(cb + 2, 1, context);
+		if (pb == NULL) {
+			goto errorReturn;
+		}
 
-	ssize_t cb2 = cn_cbor_encoder_write(pb, 0, cb - 1, cborRoot);
-	if (cb2 != -1) {
-		CFails += 1;
-	}
+		ssize_t cb2 = cn_cbor_encoder_write(pb, 0, cb - 1, cborRoot);
+		if (cb2 != -1) {
+			CFails += 1;
+		}
 
-	cb2 = cn_cbor_encoder_write(pb, 0, cb, cborRoot);
-	if (cb2 != cb) {
-		CFails += 1;
-	}
+		cb2 = cn_cbor_encoder_write(pb, 0, cb, cborRoot);
+		if (cb2 != cb) {
+			CFails += 1;
+		}
 
-	cb2 = cn_cbor_encoder_write(pb, 0, cb + 1, cborRoot);
-	if (cb != cb2) {
-		CFails += 1;
-	}
+		cb2 = cn_cbor_encoder_write(pb, 0, cb + 1, cborRoot);
+		if (cb != cb2) {
+			CFails += 1;
+		}
 
-	cn_cbor_free(cborRoot, context);
+		cn_cbor_free(cborRoot, context);
+		cborRoot = NULL;
 
-	cborRoot = cn_cbor_decode(pb, cb2, context, NULL);
+		cborRoot = cn_cbor_decode(pb, cb2, context, NULL);
+		if (cborRoot == NULL) {
+			goto errorReturn;
+		}
 
-	cn_cbor_free(cborRoot, context);
+		finished = true;
 
-	context->free_func(pb, context);
+	errorReturn:
+		if (cborRoot != NULL) {
+			cn_cbor_free(cborRoot, context);
+		}
+		if (cbor != NULL) {
+			cn_cbor_free(cbor, context);
+		}
+		if (cbor2 != NULL) {
+			cn_cbor_free(cbor2, context);
+		}
+		if (pb != NULL) {
+			context->free_func(pb, context);
+		}
+		if (s != NULL) {
+			context->free_func(s, context);
+		}
 
-	if (IsContextEmpty(context) > 0) {
-		CFails += 1;
+		if (IsContextEmpty(context) > 0) {
+			CFails += 1;
+		}
+
+    FreeContext(context);
 	}
 }
 #endif

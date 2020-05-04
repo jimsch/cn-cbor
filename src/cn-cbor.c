@@ -284,7 +284,7 @@ again:
 				case AI_2:
 #ifndef CBOR_NO_FLOAT
 					cb->type = CN_CBOR_DOUBLE;
-					cb->v.dbl = decode_half(val);
+					cb->v.dbl = decode_half((int) val);
 #else  /*  CBOR_NO_FLOAT */
 					CN_CBOR_FAIL(CN_CBOR_ERR_FLOAT_NOT_SUPPORTED);
 #endif /*  CBOR_NO_FLOAT */
