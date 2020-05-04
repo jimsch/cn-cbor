@@ -44,7 +44,7 @@ void CreateTests()
 	cbor = cn_cbor_int_create(20, context, NULL);
 	cn_cbor_free(cbor, context);
 
-#ifndef CBOR_NO_FLOATS
+#ifndef CBOR_NO_FLOAT
 	cbor = cn_cbor_float_create((float)20.2, context, NULL);
 	cn_cbor_free(cbor, context);
 
@@ -274,7 +274,7 @@ void EncoderTests()
 		cn_cbor_array_append(cborRoot, cbor2, NULL);
 		cbor2 = NULL;
 
-#ifndef CBOR_NO_FLOATS
+#ifndef CBOR_NO_FLOAT
 		cbor = cn_cbor_float_create(9, context, NULL);
 		if (cbor == NULL) {
 			goto errorReturn;
