@@ -61,7 +61,7 @@ jobs:
       - name: Test
         working-directory: ${{runner.workspace}}/build
         shell: bash
-        run: make all test
+        run: ctest -C Debug --verbose
       
 
   clang-tidy:
