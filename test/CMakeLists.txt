@@ -17,6 +17,7 @@ endfunction()
 create_test(cbor)
 # create_test(file)
 create_test(memory)
+target_sources(cbor_test PRIVATE context.c)
 target_sources(memory_test PRIVATE context.c)
 include(CTest)
 

@@ -19,18 +19,34 @@
 #endif
 
 #include "cn-cbor/cn-cbor.h"
+#include "context.h"
 
 #define CTEST_MAIN
 #include "ctest.h"
 
+#ifdef USE_CBOR_CONTEXT
+cn_cbor_context *context;
+#endif
+
 int main(int argc, const char *argv[])
 {
-	return ctest_main(argc, argv);
+#ifdef USE_CBOR_CONTEXT
+	context = CreateContext(-1);
+#endif
+
+	int i = ctest_main(argc, argv);
+#ifdef USE_CBOR_CONTEXT
+	if (IsContextEmpty(context) > 0) {
+		i += 1;
+		printf("MEMORY CONTEXT NOT EMPTY");
+	}
+#endif
+	return i;
 }
 
 #ifdef USE_CBOR_CONTEXT
-#define CONTEXT_NULL , NULL
-#define CONTEXT_NULL_COMMA NULL,
+#define CONTEXT_NULL , context
+#define CONTEXT_NULL_COMMA context,
 #else
 #define CONTEXT_NULL
 #define CONTEXT_NULL_COMMA
@@ -436,6 +452,8 @@ CTEST(cbor, map_errors)
 	cn_cbor_mapput_string(ci, "foo", NULL, CONTEXT_NULL_COMMA & err);
 	ASSERT_EQUAL(err.err, CN_CBOR_ERR_INVALID_PARAMETER);
 	cn_cbor_map_put(ci, NULL, NULL, &err);
+	ASSERT_EQUAL(err.err, CN_CBOR_ERR_INVALID_PARAMETER);
+	cn_cbor_free(ci CONTEXT_NULL);
 }
 
 CTEST(cbor, array)
@@ -453,6 +471,7 @@ CTEST(cbor, array)
 	cn_cbor_array_append(a, cn_cbor_string_create("five", CONTEXT_NULL_COMMA & err), &err);
 	ASSERT_TRUE(err.err == CN_CBOR_NO_ERROR);
 	ASSERT_EQUAL(a->length, 2);
+	cn_cbor_free(a CONTEXT_NULL);
 }
 
 CTEST(cbor, array_errors)
@@ -463,6 +482,7 @@ CTEST(cbor, array_errors)
 	ASSERT_EQUAL(err.err, CN_CBOR_ERR_INVALID_PARAMETER);
 	cn_cbor_array_append(ci, NULL, &err);
 	ASSERT_EQUAL(err.err, CN_CBOR_ERR_INVALID_PARAMETER);
+	cn_cbor_free(ci CONTEXT_NULL);
 }
 
 CTEST(cbor, create_encode)
@@ -484,4 +504,147 @@ CTEST(cbor, create_encode)
 	ASSERT_EQUAL(7, enc_sz);
 	enc_sz = cn_cbor_encoder_write(encoded, 0, sizeof(encoded), map);
 	ASSERT_EQUAL(7, enc_sz);
+	cn_cbor_free(map CONTEXT_NULL);
+}
+
+CTEST(cbor, fail2)
+{
+	cn_cbor_errback err;
+	cbor_failure tests[] = {
+		//  *  End of input in a head:
+		{"18", CN_CBOR_ERR_OUT_OF_DATA},
+		{"19", CN_CBOR_ERR_OUT_OF_DATA},
+		{"1a", CN_CBOR_ERR_OUT_OF_DATA},
+		{"1b", CN_CBOR_ERR_OUT_OF_DATA},
+		{"1901", CN_CBOR_ERR_OUT_OF_DATA},
+		{"1a0102", CN_CBOR_ERR_OUT_OF_DATA},
+		{"1b01020304050607", CN_CBOR_ERR_OUT_OF_DATA},
+		{"38", CN_CBOR_ERR_OUT_OF_DATA},
+		{"58", CN_CBOR_ERR_OUT_OF_DATA},
+		{"78", CN_CBOR_ERR_OUT_OF_DATA},
+		{"98", CN_CBOR_ERR_OUT_OF_DATA},
+		{"9a01ff00", CN_CBOR_ERR_OUT_OF_DATA},
+		{"b8", CN_CBOR_ERR_OUT_OF_DATA},
+		{"d8", CN_CBOR_ERR_OUT_OF_DATA},
+		{"f8", CN_CBOR_ERR_OUT_OF_DATA},
+		{"f900", CN_CBOR_ERR_OUT_OF_DATA},
+		{"fa0000", CN_CBOR_ERR_OUT_OF_DATA},
+		{"fb000000", CN_CBOR_ERR_OUT_OF_DATA},
+
+		//   *  Definite length strings with short data:
+		{"41", CN_CBOR_ERR_OUT_OF_DATA},
+		{"61", CN_CBOR_ERR_OUT_OF_DATA},
+		{"5affffffff00", CN_CBOR_ERR_OUT_OF_DATA},
+		{"5bffffffffffffffff010203", CN_CBOR_ERR_OUT_OF_DATA},
+		{"7affffffff00", CN_CBOR_ERR_OUT_OF_DATA},
+		{"7b7fffffffffffffff010203", CN_CBOR_ERR_OUT_OF_DATA},
+
+		//   *  Definite length maps and arrays not closed with enough items:
+		{"81", CN_CBOR_ERR_OUT_OF_DATA},
+		{"818181818181818181", CN_CBOR_ERR_OUT_OF_DATA},
+		{"8200", CN_CBOR_ERR_OUT_OF_DATA},
+		{"a1", CN_CBOR_ERR_OUT_OF_DATA},
+		{"a20102", CN_CBOR_ERR_OUT_OF_DATA},
+		{"a100", CN_CBOR_ERR_OUT_OF_DATA},
+		{"a2000000", CN_CBOR_ERR_OUT_OF_DATA},
+
+		//   *  Tag number not followed by tag content:
+		{"c0", CN_CBOR_ERR_OUT_OF_DATA},
+
+		//   *  Indefinite length strings not closed by a break stop code:
+		{"5f4100", CN_CBOR_ERR_OUT_OF_DATA}, {"7f6100", CN_CBOR_ERR_OUT_OF_DATA},
+
+		//   *  Indefinite length maps and arrays not closed by a break stop code:
+		{"9f", CN_CBOR_ERR_OUT_OF_DATA}, {"9f0102", CN_CBOR_ERR_OUT_OF_DATA}, {"bf", CN_CBOR_ERR_OUT_OF_DATA},
+		{"bf01020102", CN_CBOR_ERR_OUT_OF_DATA}, {"819f", CN_CBOR_ERR_OUT_OF_DATA}, {"9f8000", CN_CBOR_ERR_OUT_OF_DATA},
+		{"9f9f9f9f9fffffffff", CN_CBOR_ERR_OUT_OF_DATA}, {"9f819f819f9fffffff", CN_CBOR_ERR_OUT_OF_DATA},
+
+		//   *  Reserved additional information values:
+		{"1c", CN_CBOR_ERR_RESERVED_AI},
+		{"1d", CN_CBOR_ERR_RESERVED_AI},
+		{"1e", CN_CBOR_ERR_RESERVED_AI},
+		{"3c", CN_CBOR_ERR_RESERVED_AI},
+		{"3d", CN_CBOR_ERR_RESERVED_AI},
+		{"3e", CN_CBOR_ERR_RESERVED_AI},
+		{"5c", CN_CBOR_ERR_RESERVED_AI},
+		{"5d", CN_CBOR_ERR_RESERVED_AI},
+		{"5e", CN_CBOR_ERR_RESERVED_AI},
+		{"7c", CN_CBOR_ERR_RESERVED_AI},
+		{"7d", CN_CBOR_ERR_RESERVED_AI},
+		{"7e", CN_CBOR_ERR_RESERVED_AI},
+		{"9c", CN_CBOR_ERR_RESERVED_AI},
+		{"9d", CN_CBOR_ERR_RESERVED_AI},
+		{"9e", CN_CBOR_ERR_RESERVED_AI},
+		{"bc", CN_CBOR_ERR_RESERVED_AI},
+		{"bd", CN_CBOR_ERR_RESERVED_AI},
+		{"be", CN_CBOR_ERR_RESERVED_AI},
+		{"dc", CN_CBOR_ERR_RESERVED_AI},
+		{"dd", CN_CBOR_ERR_RESERVED_AI},
+		{"de", CN_CBOR_ERR_RESERVED_AI},
+		{"fc", CN_CBOR_ERR_RESERVED_AI},
+		{"fd", CN_CBOR_ERR_RESERVED_AI},
+		{"fe", CN_CBOR_ERR_RESERVED_AI},
+
+		//   *  Reserved two-byte encodings of simple types:
+#if 0
+		{"f800", CN_CBOR_ERR_RESERVED_AI},
+		{"f801", CN_CBOR_ERR_RESERVED_AI},
+		{"f818", CN_CBOR_ERR_RESERVED_AI},
+		{"f81f", CN_CBOR_ERR_RESERVED_AI},
+#endif
+		
+		//   *  Indefinite length string chunks not of the correct type:
+		{"5f00ff", CN_CBOR_ERR_WRONG_NESTING_IN_INDEF_STRING},
+		{"5f21ff", CN_CBOR_ERR_WRONG_NESTING_IN_INDEF_STRING},
+		{"5f6100ff", CN_CBOR_ERR_WRONG_NESTING_IN_INDEF_STRING},
+		{"5f80ff", CN_CBOR_ERR_WRONG_NESTING_IN_INDEF_STRING},
+		{"5fa0ff", CN_CBOR_ERR_WRONG_NESTING_IN_INDEF_STRING},
+		{"5fc000ff", CN_CBOR_ERR_WRONG_NESTING_IN_INDEF_STRING},
+		{"5fe0ff", CN_CBOR_ERR_WRONG_NESTING_IN_INDEF_STRING},
+		{"7f4100ff", CN_CBOR_ERR_WRONG_NESTING_IN_INDEF_STRING},
+
+		//   *  Indefinite length string chunks not definite length:
+		{"5f5f4100ffff", CN_CBOR_ERR_WRONG_NESTING_IN_INDEF_STRING},
+		{"7f7f6100ffff", CN_CBOR_ERR_WRONG_NESTING_IN_INDEF_STRING},
+
+		//   *  Break occurring on its own outside of an indefinite length item:
+		{"ff", CN_CBOR_ERR_BREAK_OUTSIDE_INDEF},
+
+		//   *  Break occurring in a definite length array or map or a tag:
+		{"81ff", CN_CBOR_ERR_BREAK_OUTSIDE_INDEF},
+		{"8200ff", CN_CBOR_ERR_BREAK_OUTSIDE_INDEF},
+		{"a1ff", CN_CBOR_ERR_BREAK_OUTSIDE_INDEF},
+		{"a1ff00", CN_CBOR_ERR_BREAK_OUTSIDE_INDEF},
+		{"a100ff", CN_CBOR_ERR_BREAK_OUTSIDE_INDEF},
+		{"a20000ff", CN_CBOR_ERR_BREAK_OUTSIDE_INDEF},
+		{"9f81ff", CN_CBOR_ERR_BREAK_OUTSIDE_INDEF},
+		{"9f829f819f9fffffffff", CN_CBOR_ERR_BREAK_OUTSIDE_INDEF},
+
+		//   *  Break in indefinite length map would lead to odd number of items (break in a value position):
+		{"bf00ff", CN_CBOR_ERR_ODD_SIZE_INDEF_MAP},
+		{"bf000000ff", CN_CBOR_ERR_ODD_SIZE_INDEF_MAP},
+
+		//   *  Major type 0, 1, 6 with additional information 31:
+		{"1f", CN_CBOR_ERR_MT_UNDEF_FOR_INDEF},
+		{"3f", CN_CBOR_ERR_MT_UNDEF_FOR_INDEF},
+		{"df", CN_CBOR_ERR_OUT_OF_DATA}
+	};
+	cn_cbor *cb;
+	buffer b;
+	size_t i;
+	uint8_t buf[10];
+	cn_cbor inv = {CN_CBOR_INVALID, 0, {0}, 0, NULL, NULL, NULL, NULL};
+
+	ASSERT_EQUAL(-1, cn_cbor_encoder_write(buf, 0, sizeof(buf), &inv));
+
+	for (i = 0; i < sizeof(tests) / sizeof(cbor_failure); i++) {
+		ASSERT_TRUE(parse_hex(tests[i].hex, &b));
+		cb = cn_cbor_decode(b.ptr, b.sz CONTEXT_NULL, &err);
+		// CTEST_LOG("%s: %s %s", tests[i].hex, cn_cbor_error_str[tests[i].err], cn_cbor_error_str[err.err]);
+		ASSERT_NULL(cb);
+		ASSERT_EQUAL(err.err, tests[i].err);
+
+		free(b.ptr);
+		cn_cbor_free(cb CONTEXT_NULL);
+	}
 }

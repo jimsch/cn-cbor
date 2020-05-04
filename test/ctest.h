@@ -168,7 +168,7 @@ void assert_fail(const char* caller, int line);
 
 static size_t ctest_errorsize;
 static char* ctest_errormsg;
-#define MSG_SIZE 4096
+#define MSG_SIZE 2*4096
 static char ctest_errorbuffer[MSG_SIZE];
 static jmp_buf ctest_err;
 static int color_output = 1;
