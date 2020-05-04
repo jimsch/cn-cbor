@@ -43,8 +43,8 @@ typedef struct _buffer {
 
 static bool parse_hex(char *inp, buffer *b)
 {
-	int len = strlen(inp);
-	size_t i;
+	size_t len = strlen(inp);
+	size_t i = 0;
 	if (len % 2 != 0) {
 		b->sz = -1;
 		b->ptr = NULL;

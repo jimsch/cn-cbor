@@ -116,14 +116,14 @@ void assert_str(const char* exp, const char* real, const char* caller, int line)
 #define ASSERT_STR(exp, real) assert_str(exp, real, __FILE__, __LINE__)
 
 void assert_data(const unsigned char* exp,
-	int expsize,
+	size_t expsize,
 	const unsigned char* real,
-	int realsize,
+	size_t realsize,
 	const char* caller,
 	int line);
 #define ASSERT_DATA(exp, expsize, real, realsize) assert_data(exp, expsize, real, realsize, __FILE__, __LINE__)
 
-void assert_equal(long exp, long real, const char* caller, int line);
+void assert_equal(size_t exp, size_t real, const char* caller, int line);
 #define ASSERT_EQUAL(exp, real) assert_equal(exp, real, __FILE__, __LINE__)
 
 void assert_not_equal(long exp, long real, const char* caller, int line);
@@ -259,9 +259,9 @@ void assert_str(const char* exp, const char* real, const char* caller, int line)
 }
 
 void assert_data(const unsigned char* exp,
-	int expsize,
+	size_t expsize,
 	const unsigned char* real,
-	int realsize,
+	size_t realsize,
 	const char* caller,
 	int line)
 {
@@ -276,7 +276,7 @@ void assert_data(const unsigned char* exp,
 	}
 }
 
-void assert_equal(long exp, long real, const char* caller, int line)
+void assert_equal(size_t exp, size_t real, const char* caller, int line)
 {
 	if (exp != real) {
 		CTEST_ERR("%s:%d  expected %ld, got %ld", caller, line, exp, real);
