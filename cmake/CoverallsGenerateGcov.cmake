@@ -410,8 +410,8 @@ foreach(NOT_COVERED_SRC ${COVERAGE_SRCS_REMAINING})
 
 	# Generate the final JSON for this file.
 	message("Generate JSON for non-gcov file: ${NOT_COVERED_SRC}...")
-	string(CONFIGURE ${SRC_FILE_TEMPLATE} FILE_JSON)
-	set(JSON_GCOV_FILES "${JSON_GCOV_FILES}${FILE_JSON}, ")
+	# string(CONFIGURE ${SRC_FILE_TEMPLATE} FILE_JSON)
+	# set(JSON_GCOV_FILES "${JSON_GCOV_FILES}${FILE_JSON}, ")
 endforeach()
 
 # Get rid of trailing comma.
