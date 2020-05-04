@@ -58,6 +58,12 @@ jobs:
         shell: bash
         run: cmake --build .
 
+      - name: Test
+        working-directory: ${{runner.workspace}}/build
+        shell: bash
+        run: make all test
+      
+
   clang-tidy:
     runs-on: ${{ matrix.os }}
     strategy:
