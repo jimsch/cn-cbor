@@ -1,6 +1,3 @@
-#ifndef CN_CBOR_C
-#define CN_CBOR_C
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -388,5 +385,3 @@ cn_cbor *cn_cbor_decode(const unsigned char *buf, size_t len CBOR_CONTEXT, cn_cb
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* CN_CBOR_C */

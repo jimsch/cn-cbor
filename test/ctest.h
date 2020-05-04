@@ -265,7 +265,7 @@ void assert_data(const unsigned char* exp,
 	const char* caller,
 	int line)
 {
-	int i;
+	size_t i;
 	if (expsize != realsize) {
 		CTEST_ERR("%s:%d  expected %d bytes, got %d", caller, line, expsize, realsize);
 	}
