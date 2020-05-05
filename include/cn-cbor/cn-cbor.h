@@ -8,6 +8,8 @@
 #ifndef CN_CBOR_H
 #define CN_CBOR_H
 
+#define CN_CBOR_VERSION 0x010100
+
 #ifdef __MBED__
 #include <stddef.h>
 #endif
@@ -391,7 +393,7 @@ cn_cbor* cn_cbor_data_create2(const uint8_t* data, int len, int flags CBOR_CONTE
  * @return                   The created object, or NULL on error
  */
 MYLIB_EXPORT
-cn_cbor* cn_cbor_string_create(const char* data CBOR_CONTEXT, cn_cbor_errback* errp);
+cn_cbor* cn_cbor_string_create(const char* data, CBOR_CONTEXT_COMMA cn_cbor_errback* errp);
 
 /**
  * Create a CBOR UTF-8 string.  The data is not checked for UTF-8 correctness.
@@ -444,7 +446,7 @@ cn_cbor* cn_cbor_double_create(double value CBOR_CONTEXT, cn_cbor_errback* errp)
 #endif /* CBOR_NO_FLOAT */
 
 /**
- * Create a CBOR simple boolean.
+ * Create a CBOR simple value.
  *
  * @note: Do NOT use this function with untrusted data.  It calls strlen, and
  * relies on proper NULL-termination.
@@ -454,10 +456,23 @@ cn_cbor* cn_cbor_double_create(double value CBOR_CONTEXT, cn_cbor_errback* errp)
  * @param[out]  errp         Error, if NULL is returned
  * @return                   The created object, or NULL on error
  */
-MYLIB_EXPORT
-cn_cbor* cn_cbor_simple_create(int simpleValue CBOR_CONTEXT, cn_cbor_errback* errp);
+cn_cbor* cn_cbor_simple_create(int simpleValue, CBOR_CONTEXT_COMMA cn_cbor_errback* errp);
 
-#define cn_cbor_null_create(context, error) cn_cbor_simple_create(22, context, error)
+/**
+ * Create a CBOR NULL
+ *
+ * @param[in]   CBOR_CONTEXT Allocation context (only if USE_CBOR_CONTEXT is defined)
+ * @param[out]  errp         Error, if NULL is returned
+ * @return                   The created object, or NULL on error
+ */
+static inline cn_cbor* cn_cbor_null_create(CBOR_CONTEXT_COMMA cn_cbor_errback* errp)
+{
+	return cn_cbor_simple_create(22,
+#ifdef USE_CBOR_CONTEXT
+		context,
+#endif
+		errp);
+}
 
 /**
  * Tag a CBOR object
@@ -484,8 +499,15 @@ cn_cbor* cn_cbor_tag_create(int tag, cn_cbor* child, CBOR_CONTEXT_COMMA cn_cbor_
  * @param[out]  errp         Error, if NULL is returned
  * @return                   The created object, or NULL on error
  */
-MYLIB_EXPORT
-cn_cbor* cn_cbor_bool_create(bool value CBOR_CONTEXT, cn_cbor_errback* errp);
+
+static inline cn_cbor* cn_cbor_bool_create(bool value CBOR_CONTEXT, cn_cbor_errback* errp)
+{
+	return cn_cbor_simple_create(value ? 21 : 20,
+#ifdef USE_CBOR_CONTEXT
+		context,
+#endif
+		errp);
+}
 
 /**
  * Create a chunked text or byte string.

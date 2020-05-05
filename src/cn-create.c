@@ -25,16 +25,6 @@ extern "C" {
 	}
 
 MYLIB_EXPORT
-cn_cbor* cn_cbor_bool_create(bool value CBOR_CONTEXT, cn_cbor_errback* errp)
-{
-	cn_cbor* ret;
-	INIT_CB(ret);
-
-	ret->type = CN_CBOR_FALSE + (value != 0);
-	return ret;
-}
-
-MYLIB_EXPORT
 cn_cbor* cn_cbor_simple_create(int simpleValue, CBOR_CONTEXT_COMMA cn_cbor_errback* errp)
 {
 	if (24 <= simpleValue && simpleValue <= 31) {
