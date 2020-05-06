@@ -24,7 +24,7 @@ extern "C" {
 		return NULL;                               \
 	}
 
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 cn_cbor* cn_cbor_simple_create(int simpleValue, CBOR_CONTEXT_COMMA cn_cbor_errback* errp)
 {
 	if (24 <= simpleValue && simpleValue <= 31) {
@@ -58,7 +58,7 @@ cn_cbor* cn_cbor_simple_create(int simpleValue, CBOR_CONTEXT_COMMA cn_cbor_errba
 	return ret;
 }
 
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 cn_cbor* cn_cbor_tag_create(int tag, cn_cbor* child, CBOR_CONTEXT_COMMA cn_cbor_errback* errp)
 {
 	cn_cbor* ret;
@@ -72,7 +72,7 @@ cn_cbor* cn_cbor_tag_create(int tag, cn_cbor* child, CBOR_CONTEXT_COMMA cn_cbor_
 	return ret;
 }
 
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 cn_cbor* cn_cbor_map_create(CBOR_CONTEXT_COMMA cn_cbor_errback* errp)
 {
 	cn_cbor* ret;
@@ -84,13 +84,13 @@ cn_cbor* cn_cbor_map_create(CBOR_CONTEXT_COMMA cn_cbor_errback* errp)
 	return ret;
 }
 
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 cn_cbor* cn_cbor_data_create(const uint8_t* data, int len, CBOR_CONTEXT_COMMA cn_cbor_errback* errp)
 {
 	return cn_cbor_data_create2(data, len, CN_CBOR_FL_EXT_DATA CBOR_CONTEXT_PARAM, errp);
 }
 
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 cn_cbor* cn_cbor_data_create2(const uint8_t* data, int len, int flags CBOR_CONTEXT, cn_cbor_errback* errp)
 {
 	cn_cbor* ret = NULL;
@@ -103,13 +103,13 @@ cn_cbor* cn_cbor_data_create2(const uint8_t* data, int len, int flags CBOR_CONTE
 	return ret;
 }
 
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 cn_cbor* cn_cbor_string_create(const char* data, CBOR_CONTEXT_COMMA cn_cbor_errback* errp)
 {
 	return cn_cbor_string_create2(data, CN_CBOR_FL_EXT_DATA CBOR_CONTEXT_PARAM, errp);
 }
 
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 cn_cbor* cn_cbor_string_create2(const char* data, int flags CBOR_CONTEXT, cn_cbor_errback* errp)
 {
 	cn_cbor* ret = NULL;
@@ -123,7 +123,7 @@ cn_cbor* cn_cbor_string_create2(const char* data, int flags CBOR_CONTEXT, cn_cbo
 	return ret;
 }
 
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 cn_cbor* cn_cbor_int_create(int64_t value CBOR_CONTEXT, cn_cbor_errback* errp)
 {
 	cn_cbor* ret;
@@ -184,7 +184,7 @@ static bool _append_kv(cn_cbor* cb_map, cn_cbor* key, cn_cbor* val)
 	return true;
 }
 
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 bool cn_cbor_map_put(cn_cbor* cb_map, cn_cbor* cb_key, cn_cbor* cb_value, cn_cbor_errback* errp)
 {
 	// Make sure input is a map. Otherwise
@@ -198,7 +198,7 @@ bool cn_cbor_map_put(cn_cbor* cb_map, cn_cbor* cb_key, cn_cbor* cb_value, cn_cbo
 	return _append_kv(cb_map, cb_key, cb_value);
 }
 
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 bool cn_cbor_mapput_int(cn_cbor* cb_map, int64_t key, cn_cbor* cb_value CBOR_CONTEXT, cn_cbor_errback* errp)
 {
 	cn_cbor* cb_key;
@@ -218,13 +218,13 @@ bool cn_cbor_mapput_int(cn_cbor* cb_map, int64_t key, cn_cbor* cb_value CBOR_CON
 	return _append_kv(cb_map, cb_key, cb_value);
 }
 
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 bool cn_cbor_mapput_string(cn_cbor* cb_map, const char* key, cn_cbor* cb_value CBOR_CONTEXT, cn_cbor_errback* errp)
 {
 	return cn_cbor_mapput_string2(cb_map, key, cb_value, CN_CBOR_FL_EXT_DATA CBOR_CONTEXT_PARAM, errp);
 }
 
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 bool cn_cbor_mapput_string2(cn_cbor* cb_map,
 	const char* key,
 	cn_cbor* cb_value,
@@ -246,7 +246,7 @@ bool cn_cbor_mapput_string2(cn_cbor* cb_map,
 	return _append_kv(cb_map, cb_key, cb_value);
 }
 
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 cn_cbor* cn_cbor_array_create(CBOR_CONTEXT_COMMA cn_cbor_errback* errp)
 {
 	cn_cbor* ret;
@@ -258,7 +258,7 @@ cn_cbor* cn_cbor_array_create(CBOR_CONTEXT_COMMA cn_cbor_errback* errp)
 	return ret;
 }
 
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 bool cn_cbor_array_append(cn_cbor* cb_array, cn_cbor* cb_value, cn_cbor_errback* errp)
 {
 	// Make sure input is an array.
@@ -282,7 +282,7 @@ bool cn_cbor_array_append(cn_cbor* cb_array, cn_cbor* cb_value, cn_cbor_errback*
 	return true;
 }
 
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 cn_cbor* cn_cbor_chunked_create(int type, CBOR_CONTEXT_COMMA cn_cbor_errback* errp)
 {
 	cn_cbor* ret;
@@ -306,7 +306,7 @@ cn_cbor* cn_cbor_chunked_create(int type, CBOR_CONTEXT_COMMA cn_cbor_errback* er
 	return ret;
 }
 
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 bool cn_cbor_chunked_append(cn_cbor* cb_array, cn_cbor* cb_value, cn_cbor_errback* errp)
 {
 	// Make sure input is an array.
