@@ -30,6 +30,10 @@ option(CN_CBOR_NO_FLOATS "Build without floating point support" OFF)
 option(CN_CBOR_ALIGN_READS "Use memcpy in ntoh*p()" OFF)
 option(CN_CBOR_RUN_CLANG_TIDY "Use Clang-Tidy for static analysis" OFF)
 
+if(NOT CMAKE_C_STANDARD)
+  set(CMAKE_C_STANDARD 11)
+endif()
+
 set(dist_dir ${CMAKE_BINARY_DIR}/dist)
 set(prefix ${CMAKE_INSTALL_PREFIX})
 set(exec_prefix ${CMAKE_INSTALL_PREFIX}/bin)
