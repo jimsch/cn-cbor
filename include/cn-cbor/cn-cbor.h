@@ -14,15 +14,15 @@
 #include <stddef.h>
 #endif
 
-#ifndef MYLIB_EXPORT
+#ifndef CN_CBOR_EXPORT
 #if defined(_WIN32)
 #if defined(CN_CBOR_IS_DLL)
-#define MYLIB_EXPORT __declspec(dllimport)
+#define CN_CBOR_EXPORT __declspec(dllimport)
 #else
-#define MYLIB_EXPORT
+#define CN_CBOR_EXPORT
 #endif /* CN_CBOR_IS_DLL */
 #else  /* defined (_WIN32) */
-#define MYLIB_EXPORT
+#define CN_CBOR_EXPORT
 #endif
 #endif
 
@@ -196,7 +196,7 @@ typedef enum cn_cbor_error {
  *
  * @todo: turn into a function to make the type safety more clear?
  */
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 extern const char* cn_cbor_error_str[];
 
 /**
@@ -267,7 +267,7 @@ typedef struct cn_cbor_context {
  *
  */
 
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 void cn_cbor_dont_free_data(cn_cbor* cbor);
 
 /**
@@ -283,7 +283,7 @@ void cn_cbor_dont_free_data(cn_cbor* cbor);
  * @param[out] errp         Error, if NULL is returned
  * @return                  The parsed CBOR structure, or NULL on error
  */
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 cn_cbor* cn_cbor_decode(const uint8_t* buf, size_t len CBOR_CONTEXT, cn_cbor_errback* errp);
 
 /**
@@ -293,7 +293,7 @@ cn_cbor* cn_cbor_decode(const uint8_t* buf, size_t len CBOR_CONTEXT, cn_cbor_err
  * @param[in]  key          The string to look up in the map
  * @return                  The matching value, or NULL if the key is not found
  */
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 cn_cbor* cn_cbor_mapget_string(const cn_cbor* cb, const char* key);
 
 /**
@@ -303,7 +303,7 @@ cn_cbor* cn_cbor_mapget_string(const cn_cbor* cb, const char* key);
  * @param[in]  key          The int to look up in the map
  * @return                  The matching value, or NULL if the key is not found
  */
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 cn_cbor* cn_cbor_mapget_int(const cn_cbor* cb, int key);
 
 /**
@@ -313,7 +313,7 @@ cn_cbor* cn_cbor_mapget_int(const cn_cbor* cb, int key);
  * @param[in]  idx          The array index
  * @return                  The matching value, or NULL if the index is invalid
  */
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 cn_cbor* cn_cbor_index(const cn_cbor* cb, unsigned int idx);
 
 /**
@@ -324,7 +324,7 @@ cn_cbor* cn_cbor_index(const cn_cbor* cb, unsigned int idx);
  * @param[in]  cb           The CBOR value to free.  May be NULL, or a root object.
  * @param[in]  CBOR_CONTEXT Allocation context (only if USE_CBOR_CONTEXT is defined)
  */
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 void cn_cbor_free(cn_cbor* cb CBOR_CONTEXT);
 
 /**
@@ -349,7 +349,7 @@ ssize_t cn_cbor_encoder_write(uint8_t* buf, size_t buf_offset, size_t buf_size, 
  * @param[out]  errp         Error, if NULL is returned
  * @return                   The created map, or NULL on error
  */
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 cn_cbor* cn_cbor_map_create(CBOR_CONTEXT_COMMA cn_cbor_errback* errp);
 
 /**
@@ -362,7 +362,7 @@ cn_cbor* cn_cbor_map_create(CBOR_CONTEXT_COMMA cn_cbor_errback* errp);
  * @param[out]  errp         Error, if NULL is returned
  * @return                   The created object, or NULL on error
  */
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 cn_cbor* cn_cbor_data_create(const uint8_t* data, int len CBOR_CONTEXT, cn_cbor_errback* errp);
 
 /**
@@ -376,7 +376,7 @@ cn_cbor* cn_cbor_data_create(const uint8_t* data, int len CBOR_CONTEXT, cn_cbor_
  * @param[out]  errp         Error, if NULL is returned
  * @return                   The created object, or NULL on error
  */
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 cn_cbor* cn_cbor_data_create2(const uint8_t* data, int len, int flags CBOR_CONTEXT, cn_cbor_errback* errp);
 
 /**
@@ -392,7 +392,7 @@ cn_cbor* cn_cbor_data_create2(const uint8_t* data, int len, int flags CBOR_CONTE
  * @param[out]  errp         Error, if NULL is returned
  * @return                   The created object, or NULL on error
  */
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 cn_cbor* cn_cbor_string_create(const char* data, CBOR_CONTEXT_COMMA cn_cbor_errback* errp);
 
 /**
@@ -409,7 +409,7 @@ cn_cbor* cn_cbor_string_create(const char* data, CBOR_CONTEXT_COMMA cn_cbor_errb
  * @param[out]  errp         Error, if NULL is returned
  * @return                   The created object, or NULL on error
  */
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 cn_cbor* cn_cbor_string_create2(const char* data, int flags CBOR_CONTEXT, cn_cbor_errback* errp);
 
 /**
@@ -420,7 +420,7 @@ cn_cbor* cn_cbor_string_create2(const char* data, int flags CBOR_CONTEXT, cn_cbo
  * @param[out]  errp         Error, if NULL is returned
  * @return                   The created object, or NULL on error
  */
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 cn_cbor* cn_cbor_int_create(int64_t value CBOR_CONTEXT, cn_cbor_errback* errp);
 
 #ifndef CBOR_NO_FLOAT
@@ -517,7 +517,7 @@ static inline cn_cbor* cn_cbor_bool_create(bool value CBOR_CONTEXT, cn_cbor_errb
  * @param[in]   errp          Error; if NULL is returned
  * @return                    The created object or NULL on error
  */
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 cn_cbor* cn_cbor_chunked_create(int type, CBOR_CONTEXT_COMMA cn_cbor_errback* errp);
 
 /**
@@ -528,7 +528,7 @@ cn_cbor* cn_cbor_chunked_create(int type, CBOR_CONTEXT_COMMA cn_cbor_errback* er
  * @param[in]   errp          Error; if FALSE is returned
  * @return                    True if successfully appended
  */
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 bool cn_cbor_chunked_append(cn_cbor* cb_array, cn_cbor* cb_value, cn_cbor_errback* errp);
 
 /**
@@ -541,7 +541,7 @@ bool cn_cbor_chunked_append(cn_cbor* cb_array, cn_cbor* cb_value, cn_cbor_errbac
  * @param[out]  errp         Error
  * @return                   True on success
  */
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 bool cn_cbor_map_put(cn_cbor* cb_map, cn_cbor* cb_key, cn_cbor* cb_value, cn_cbor_errback* errp);
 
 /**
@@ -555,7 +555,7 @@ bool cn_cbor_map_put(cn_cbor* cb_map, cn_cbor* cb_key, cn_cbor* cb_value, cn_cbo
  * @param[out]  errp         Error
  * @return                   True on success
  */
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 bool cn_cbor_mapput_int(cn_cbor* cb_map, int64_t key, cn_cbor* cb_value CBOR_CONTEXT, cn_cbor_errback* errp);
 
 /**
@@ -572,7 +572,7 @@ bool cn_cbor_mapput_int(cn_cbor* cb_map, int64_t key, cn_cbor* cb_value CBOR_CON
  * @param[out]  errp         Error
  * @return                   True on success
  */
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 bool cn_cbor_mapput_string(cn_cbor* cb_map, const char* key, cn_cbor* cb_value CBOR_CONTEXT, cn_cbor_errback* errp);
 
 /**
@@ -590,7 +590,7 @@ bool cn_cbor_mapput_string(cn_cbor* cb_map, const char* key, cn_cbor* cb_value C
  * @param[out]  errp         Error
  * @return                   True on success
  */
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 bool cn_cbor_mapput_string2(cn_cbor* cb_map,
 	const char* key,
 	cn_cbor* cb_value,
@@ -604,7 +604,7 @@ bool cn_cbor_mapput_string2(cn_cbor* cb_map,
  * @param[out]  errp         Error, if NULL is returned
  * @return                   The created object, or NULL on error
  */
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 cn_cbor* cn_cbor_array_create(CBOR_CONTEXT_COMMA cn_cbor_errback* errp);
 
 /**
@@ -615,7 +615,7 @@ cn_cbor* cn_cbor_array_create(CBOR_CONTEXT_COMMA cn_cbor_errback* errp);
  * @param[out]  errp      Error
  * @return                True on success
  */
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 bool cn_cbor_array_append(cn_cbor* cb_array, cn_cbor* cb_value, cn_cbor_errback* errp);
 
 /**

@@ -29,13 +29,13 @@ extern "C" {
 		goto fail;         \
 	} while (0)
 
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 void cn_cbor_dont_free_data(cn_cbor *cbor)
 {
 	cbor->flags |= CN_CBOR_FL_EXT_DATA;
 }
 
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 void cn_cbor_free(cn_cbor *cb CBOR_CONTEXT)
 {
 	cn_cbor *p = (cn_cbor *)cb;
@@ -352,7 +352,7 @@ fail:
 	return 0;
 }
 
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 cn_cbor *cn_cbor_decode(const unsigned char *buf, size_t len CBOR_CONTEXT, cn_cbor_errback *errp)
 {
 	cn_cbor catcher = {CN_CBOR_INVALID, 0, {0}, 0, NULL, NULL, NULL, NULL};

@@ -6,7 +6,7 @@
 
 #include "cn-cbor/cn-cbor.h"
 
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 cn_cbor* cn_cbor_mapget_int(const cn_cbor* cb, int key)
 {
 	cn_cbor* cp;
@@ -32,7 +32,7 @@ cn_cbor* cn_cbor_mapget_int(const cn_cbor* cb, int key)
 	return NULL;
 }
 
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 cn_cbor* cn_cbor_mapget_string(const cn_cbor* cb, const char* key)
 {
 	cn_cbor* cp = NULL;
@@ -59,7 +59,7 @@ cn_cbor* cn_cbor_mapget_string(const cn_cbor* cb, const char* key)
 	return NULL;
 }
 
-MYLIB_EXPORT
+CN_CBOR_EXPORT
 cn_cbor* cn_cbor_index(const cn_cbor* cb, unsigned int idx)
 {
 	cn_cbor* cp;

@@ -12,12 +12,12 @@ building a DLL on windows.
 
 #if defined(_WIN32)
 #if defined(CN_CBOR_IS_DLL)
-#define MYLIB_EXPORT __declspec(dllexport)
+#define CN_CBOR_EXPORT __declspec(dllexport)
 #else
-#define MYLIB_EXPORT
+#define CN_CBOR_EXPORT
 #endif /* cn_cbor_EXPORTS */
 #else  /* defined (_WIN32) */
-#define MYLIB_EXPORT
+#define CN_CBOR_EXPORT
 #endif
 
 #endif /* _cn_cbor_DLLDEFINES_H_ */
