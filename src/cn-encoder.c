@@ -29,15 +29,19 @@ extern "C" {
 #include "cn-cbor/cn-cbor.h"
 #include "cbor.h"
 
-#define hton8p(p) (*(uint8_t *)(p))
-#define hton16p(p) (htons(*(uint16_t *)(p)))
-#define hton32p(p) (htonl(*(uint32_t *)(p)))
-static uint64_t hton64p(const uint8_t *p)
-{
+static uint16_t hton16p(const uint16_t *p) {
+	return htonl(*p);
+}
+
+static uint32_t hton32p(const uint32_t *p) {
+	return htonl(*p);
+}
+
+static uint64_t hton64p(const uint64_t *p) {
 	/* TODO: does this work on both BE and LE systems? */
-	uint64_t ret = hton32p(p);
+	uint64_t ret = hton32p((const uint32_t *)p);
 	ret <<= 32;
-	ret |= hton32p(p + 4);
+	ret |= hton32p((const uint32_t *)p + 1);
 	return ret;
 }
 
@@ -135,7 +139,7 @@ static bool _write_positive(cn_write_state *ws, cn_cbor_type typ, uint64_t val)
 	else {
 		uint64_t be64;
 		ensure_writable(9);
-		be64 = hton64p((const uint8_t *)&val);
+		be64 = hton64p(&val);
 		write_byte_and_data(ib | 27, (const void *)&be64, 8);
 	}
 
@@ -181,14 +185,14 @@ static bool _write_double(cn_write_state *ws, double val, int size)
 
 			ensure_writable(3);
 			u16 = s16;
-			be16 = hton16p((const uint8_t *)&u16);
+			be16 = hton16p(&u16);
 
 			write_byte_and_data(IB_PRIM | 25, (const void *)&be16, 2);
 			return true;
 		}
 	float32:
 		ensure_writable(5);
-		be32 = hton32p((const uint8_t *)&u32.u);
+		be32 = hton32p(&u32.u);
 
 		write_byte_and_data(IB_PRIM | 26, (const void *)&be32, 4);
 	}
@@ -207,7 +211,7 @@ static bool _write_double(cn_write_state *ws, double val, int size)
 		u64.d = val;
 
 		ensure_writable(9);
-		be64 = hton64p((const uint8_t *)&u64.u);
+		be64 = hton64p(&u64.u);
 
 		write_byte_and_data(IB_PRIM | 27, (const void *)&be64, 8);
 	}
