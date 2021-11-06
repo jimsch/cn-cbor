@@ -27,7 +27,6 @@ option(CN_CBOR_COVERALLS_SEND "Send data to coveralls site" OFF)
 option(CN_CBOR_BUILD_DOCS "Create docs using Doxygen" OFF)
 option(CN_CBOR_BUILD_TESTS "Create tests" ON)
 option(CN_CBOR_NO_FLOATS "Build without floating point support" OFF)
-option(CN_CBOR_ALIGN_READS "Use memcpy in ntoh*p()" OFF)
 option(CN_CBOR_RUN_CLANG_TIDY "Use Clang-Tidy for static analysis" OFF)
 
 if(NOT CMAKE_C_STANDARD)
@@ -98,9 +97,6 @@ endif()
 set(cbor_srcs src/cn-cbor.c src/cn-create.c src/cn-encoder.c src/cn-error.c
               src/cn-get.c src/cn-print.c)
 
-if(CN_CBOR_ALIGN_READS)
-  add_definitions(-DCBOR_ALIGN_READS)
-endif()
 if(CN_CBOR_USE_CONTEXT)
   add_definitions(-DUSE_CBOR_CONTEXT)
 endif()

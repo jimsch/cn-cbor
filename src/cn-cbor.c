@@ -90,10 +90,6 @@ static double decode_half(int half)
 
 #define ntoh8p(p) (*(unsigned char *)(p))
 
-#ifndef CBOR_ALIGN_READS
-#define ntoh16p(p) (ntohs(*(unsigned short *)(p)))
-#define ntoh32p(p) (ntohl(*(unsigned long *)(p)))
-#else
 static uint16_t ntoh16p(unsigned char *p)
 {
 	uint16_t tmp;
@@ -107,7 +103,6 @@ static uint32_t ntoh32p(unsigned char *p)
 	memcpy(&tmp, p, sizeof(tmp));
 	return ntohl(tmp);
 }
-#endif /* CBOR_ALIGN_READS */
 
 static uint64_t ntoh64p(unsigned char *p)
 {
